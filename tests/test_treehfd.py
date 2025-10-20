@@ -14,7 +14,8 @@ TESTS_DIR = Path(__file__).parent.resolve()
 def test_treehfd() -> None:
     """Test initialization of TreeHFD class."""
     tree_table = load_tree_table()
-    tree = TreeHFD(tree_table, interaction_order=2, depth_variable=6)
+    tree = TreeHFD(tree_table, interaction_order=2, interaction_list=None,
+                   depth_variable=6)
     assert np.array_equal(tree.tree_structure[0],
                           np.array([3, 2, 0, -1, 0, 1, 1, -1, -1, -1, -1, -1,
                                     -1]))
@@ -37,6 +38,11 @@ def test_treehfd() -> None:
     assert tree.cartesian_partition.counts_list == []
     assert np.array_equal(tree.hfd_coeffs, np.empty(0))
 
+    tree = TreeHFD(tree_table, interaction_order=2,
+                   interaction_list=np.array([[0, 1], [2, 3]]),
+                   depth_variable=6)
+    assert np.array_equal(tree.interaction_list, [[0, 1], [2, 3]])
+
 
 def test_treehfd_fit() -> None:
     """Test fit method of TreeHFD class."""
@@ -46,7 +52,8 @@ def test_treehfd_fit() -> None:
                       delimiter=",")
     y = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_y_n100_seed41.csv",
                       delimiter=",")
-    tree = TreeHFD(tree_table, interaction_order=2, depth_variable=6)
+    tree = TreeHFD(tree_table, interaction_order=2, interaction_list=None,
+                   depth_variable=6)
 
     tree.fit(X, y)
     hfd_coeffs = np.round(tree.hfd_coeffs, decimals=2)
@@ -67,7 +74,8 @@ def test_treehfd_predict() -> None:
                       delimiter=",")
     y = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_y_n100_seed51.csv",
                       delimiter=",")
-    tree = TreeHFD(tree_table, interaction_order=2, depth_variable=6)
+    tree = TreeHFD(tree_table, interaction_order=2, interaction_list=None,
+                   depth_variable=6)
     tree.fit(X, y)
     X_new = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_Xnew_n3_seed51.csv",
                           delimiter=",")

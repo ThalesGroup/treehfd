@@ -32,6 +32,11 @@ class TreeHFD:
     interaction_order : int, default=2
         Set to 1 to fit only main effects, or to 2 to also include
         second-order interactions in the TreeHFD decomposition.
+    interaction_list: np.ndarray, default=None
+        Predefined list of second-order interactions to be estimated in the
+        decomposition. Each row defines an interaction with two integers
+        for the variable indices. Default=None, and interactions are
+        automatically extracted from tree paths.
     depth_variable : int
         Variables are selected at the first depth_variable levels of the tree
         for the components of the decomposition.
@@ -60,7 +65,8 @@ class TreeHFD:
     """
 
     def __init__(self, tree_table: pd.DataFrame,
-                 interaction_order: int, depth_variable: int) -> None:
+                 interaction_order: int, interaction_list: np.ndarray | None,
+                 depth_variable: int) -> None:
         """Initialize TreeHFD from tree structure."""
         self.tree_structure: tuple[np.ndarray, np.ndarray, np.ndarray,
                                   ] = extract_tree_structure(tree_table)
@@ -74,6 +80,10 @@ class TreeHFD:
             order_two: int = 2
             if interaction_order == order_two:
                 self.interaction_list = extract_interactions(variable_paths)
+                if interaction_list is not None:
+                    self.interaction_list = [list(x) for x in
+                        {tuple(x) for x in self.interaction_list}
+                        & {tuple(x) for x in interaction_list}]
         self.eta0 = 0.0
         self.cartesian_partition = CartesianTreePartition(main_variables)
         self.hfd_coeffs: np.ndarray = np.empty(0)

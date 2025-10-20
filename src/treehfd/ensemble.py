@@ -14,6 +14,7 @@ from treehfd.tree_structure import get_params
 from treehfd.validation import (
     check_data,
     check_depth_variable,
+    check_interaction_list,
     check_interaction_order,
     check_xgb_model_learner,
     check_xgb_model_type,
@@ -121,7 +122,9 @@ class XGBTreeHFD:
         self.eta0 = 0.0
 
     def fit(self, X: np.ndarray, interaction_order: int = 2,
-            depth_variable: int | None = None, verbose: bool = True) -> None:
+            interaction_list: np.ndarray | None = None,
+            depth_variable: int | None = None,
+            verbose: bool = True) -> None:
         """Fit TreeHFD decomposition of the provided xgboost model.
 
         Parameters
@@ -131,6 +134,11 @@ class XGBTreeHFD:
         interaction_order : int, default=2
             Set to 1 to fit only main effects, or to 2 to also include
             second-order interactions in the TreeHFD decomposition.
+        interaction_list: np.ndarray, default=None
+            Predefined list of second-order interactions to be estimated in the
+            decomposition. Each row defines an interaction with two integers
+            for the variable indices. Default=None, and interactions are
+            automatically extracted from tree paths.
         depth_variable : int, default=None
             Variables are selected at the first depth_variable levels of the
             tree for the components of the decomposition. Default is None,
@@ -144,6 +152,7 @@ class XGBTreeHFD:
         check_interaction_order(interaction_order)
         self.interaction_order = interaction_order
         check_depth_variable(depth_variable)
+        check_interaction_list(interaction_list)
         if depth_variable is not None:
             self.depth_variable = depth_variable
 
@@ -162,20 +171,21 @@ class XGBTreeHFD:
         self.treehfd_list = []
         self.interaction_list = np.empty((0, 0), dtype=int)
         self.eta0 = 0
-        interaction_list: list[list[list[int]]] = []
+        interaction_list_raw: list[list[list[int]]] = []
         for tree_idx in tqdm(range(self.n_estimators), disable=not verbose):
             tree_table = pd.DataFrame(
                 self.xgb_table[self.xgb_table["Tree"] == tree_idx])
             y_tree = tree_predictions[:, tree_idx]
-            tree = TreeHFD(tree_table, interaction_order, self.depth_variable)
+            tree = TreeHFD(tree_table, interaction_order, interaction_list,
+                           self.depth_variable)
             tree.fit(X, y_tree)
             self.treehfd_list.append(tree)
             self.eta0 += tree.eta0
-            interaction_list.append(tree.interaction_list)
-        interaction_list = [x for x in interaction_list if len(x) > 0]
-        if len(interaction_list) > 0:
-            self.interaction_list = np.unique(np.concatenate(interaction_list,
-                                                             axis=0), axis=0)
+            interaction_list_raw.append(tree.interaction_list)
+        interaction_list_raw = [x for x in interaction_list_raw if len(x) > 0]
+        if len(interaction_list_raw) > 0:
+            self.interaction_list = np.unique(np.concatenate(
+                                        interaction_list_raw, axis=0), axis=0)
 
     def predict(self, X_new: np.ndarray, verbose: bool = True) -> tuple:
         """Predict TreeHFD components for new input data.

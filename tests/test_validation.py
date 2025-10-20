@@ -11,6 +11,7 @@ import xgboost as xgb
 from treehfd.validation import (
     check_data,
     check_depth_variable,
+    check_interaction_list,
     check_interaction_order,
     check_xgb_model_learner,
     check_xgb_model_type,
@@ -122,6 +123,19 @@ def test_check_interaction_order() -> None:
     # Check pass.
     assert check_interaction_order(1) is None
     assert check_interaction_order(2) is None
+
+
+def test_check_interaction_list() -> None:
+    """Test check_interaction_list function."""
+    # Check fail.
+    with pytest.raises(ValueError, match="interaction_list must be a numpy"):
+        check_interaction_list(np.ones(2))
+    with pytest.raises(ValueError, match="interaction_list must be a numpy"):
+        check_interaction_list("string")
+
+    # Check pass.
+    assert check_interaction_list(None) is None
+    assert check_interaction_list(np.array([[0, 1], [2, 3]])) is None
 
 
 def test_check_depth_variable() -> None:

@@ -92,6 +92,23 @@ def check_interaction_order(interaction_order: int) -> None:
         raise ValueError(error_msg)
 
 
+def check_interaction_list(interaction_list: np.ndarray | None) -> None:
+    """Check that interaction_list is a numpy array of integer pairs."""
+    type_check = interaction_list is None or isinstance(interaction_list,
+                                                        np.ndarray)
+    if isinstance(interaction_list, np.ndarray):
+        dim_ref = 2
+        type_check = len(interaction_list.shape) == dim_ref
+        if type_check:
+            type_check = (interaction_list.shape[1] == dim_ref
+                          and interaction_list.dtype == int)
+    if not type_check:
+        error_msg = ("interaction_list must be a numpy array, where each row "
+                     "contains a pair of integers for the indices of a "
+                     "variable  interaction.")
+        raise ValueError(error_msg)
+
+
 def check_depth_variable(depth_variable: int | None) -> None:
     """Check that depth_variable is None or positive integer."""
     type_check = depth_variable is None or isinstance(depth_variable, int)
