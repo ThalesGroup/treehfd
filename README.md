@@ -98,6 +98,12 @@ pytest
 ```
 
 
+## Contributions ⛏️
+
+Contributions are of course very welcome!
+If you are interested in contributing to ``treehfd``, start by reading the [Contributing guide](/CONTRIBUTING.md).
+
+
 ## References 📜
 
 Hoeffding, W. (1948). A Class of Statistics with Asymptotically Normal Distribution.

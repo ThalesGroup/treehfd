@@ -1,30 +1,17 @@
-Describe in this file:
+# Contribute to `treehfd`
 
-- team organization, roles, communication
-- the rules to be respected by your future contributors
+Contributions are welcome! If you want to contribute, feel free to open an issue or to contact clement-l.benard@thalesgroup.com.
 
-# Contributing guidelines
 
-## Team organization
+Various types of contributions are possible:
+- Improve documentation.
+- Share examples of `treehfd` use.
+- Extend the code.
 
-### Roles
 
-## How to become a contributor
-
-### Contributor License Agreements
-
-### Contributing code
-
-## Pull Request Checklist
-
-### License
-
-### Coding style
-
-### Testing
-
-#### Running sanity check
-
-#### Running unit tests
-
-### Issues management
+To contribute to the code, please follow these guidelines:
+- Create a new branch to implement your change and create a pull request.
+- Use `NumPy` convention for docstrings.
+- Run `pytest` to ensure that all tests pass, and add new tests for the generated code.
+- Use `ruff` and `pyright` to check the code. 
+- Documente the code using `sphinx`.
