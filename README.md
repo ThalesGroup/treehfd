@@ -104,6 +104,12 @@ Contributions are of course very welcome!
 If you are interested in contributing to ``treehfd``, start by reading the [Contributing guide](/CONTRIBUTING.md).
 
 
+## License ⚖️
+
+This package is distributed under the Apache 2.0 license. All dependencies have their own license. 
+In particular, `xgboost` relies on NVIDIA proprietary modules for the optional use of GPU.
+
+
 ## References 📜
 
 Hoeffding, W. (1948). A Class of Statistics with Asymptotically Normal Distribution.

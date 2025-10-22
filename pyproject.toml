@@ -11,6 +11,7 @@ authors = [
 ]
 description = "A python package to explain xgboost models with the Hoeffding functional decomposition."
 requires-python = ">=3.11,<3.14"
+license = {text = "Apache-2.0"}
 keywords=[
     "machine learning",
     "gradient boosted tree",
@@ -28,6 +29,7 @@ dependencies=[
 ]
 classifiers=[
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: MacOS",
     "Operating System :: POSIX",
     "Programming Language :: Python :: 3.11",
