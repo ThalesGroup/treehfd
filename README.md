@@ -3,6 +3,13 @@
 <div align="center">
     <h3>Explain XGBoost models with the Hoeffding functional decomposition.</h3>
 </div>
+<p align="center">
+  <img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg">
+  <img src="https://img.shields.io/badge/python-3.11--3.13-blue">
+  <img src="https://github.com/ThalesGroup/treehfd/actions/workflows/ci.yml/badge.svg?branch=main">
+  <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json">
+  <img src="https://microsoft.github.io/pyright/img/pyright_badge.svg">
+</p>  
 
 Clément Bénard (Thales cortAIx-Labs)
 

@@ -21,21 +21,22 @@ jobs:
       - name: Install treehfd and dependencies
         run: |
           python -m pip install uv
-          uv sync --extra dev --extra doc
+          uv -v sync --extra dev --extra doc
       
       - name: Run ruff
         run: |
-          uv run ruff check
+          uv -v run ruff check
 
       - name: Run pyright
         run: |
-          uv run pyright
+          uv -v run pyright
 
       - name: Run pytest
         run: |
-          uv run pytest
+          uv -v run coverage run -m pytest
+          uv -v run coverage json
       
       - name: Build doc
         run: |
           cd doc
-          uv run sphinx-build -M html ./source ./build
+          uv -v run sphinx-build -M html ./source ./build
