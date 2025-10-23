@@ -1,0 +1,41 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy: 
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install treehfd and dependencies
+        run: |
+          python -m pip install uv
+          uv sync --extra dev --extra doc
+      
+      - name: Run ruff
+        run: |
+          uv run ruff check
+
+      - name: Run pyright
+        run: |
+          uv run pyright
+
+      - name: Run pytest
+        run: |
+          uv run pytest
+      
+      - name: Build doc
+        run: |
+          cd doc
+          uv run sphinx-build -M html ./source ./build
