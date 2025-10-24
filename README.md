@@ -19,6 +19,8 @@ Clément Bénard (Thales cortAIx-Labs)
 
 ## Overview 🌐
 
+<div align="justify">
+
 **`treehfd`** is a Python module to compute the Hoeffding functional decomposition
 of XGBoost models (Chen and Guestrin, 2016) with dependent input variables, using
 the TreeHFD algorithm. 
@@ -37,15 +39,18 @@ of the decomposition is enforced by hierarchical orthogonality constraints. The 
 from a data sample in the dependent case is a notoriously difficult problem, and 
 therefore, the Hoeffding decomposition has long remain an abstract theoretical tool.
 TreeHFD computes the Hoeffding decomposition of tree ensembles, based on a 
-discretization of the hierarchical orthogonality constraints over the
-Cartesian tree partitions. Such decomposition is proved to be piecewise constant 
-over these partitions, and the values in each cell for all components are given 
-by solving a least square problem for each tree.
+discretization of the hierarchical orthogonality constraints over the tree partitions.
+Such decomposition is proved to be piecewise constant over these partitions,
+and the values in each cell for all components are given by solving a least square problem for each tree.
 
 **`treehfd`** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
 
+</div>
+
 
 ## Illustration 💡
+
+<div align="justify">
 
 The output of **`treehfd`** is illustrated with a standard dataset, the California Housing dataset,
 where housing prices are predicted from various features, such as the house locations, and
@@ -58,6 +63,8 @@ In particular, **`treehfd`** clearly identifies the peak of housing prices in th
 corresponding to the San Francisco Bay Area (-122°25'), whereas `TreeSHAP` does not really detect it,
 because main effects are entangled with interactions, while they are orthogonal in the Hoeffding decomposition.
  **`treehfd`** also highlights that house prices are lower in northern and eastern California.
+
+</div>
 
 <div align="center">
 <img src="examples/fig_housing_main_effects_shap.png" alt="drawing" width="800"/>
@@ -108,7 +115,7 @@ pytest
 ## Contributions ⛏️
 
 Contributions are of course very welcome!
-If you are interested in contributing to ``treehfd``, start by reading the [Contributing guide](/CONTRIBUTING.md).
+If you are interested in contributing to ``treehfd``, start by reading the [Contributing guide](CONTRIBUTING.md).
 
 
 ## License ⚖️
@@ -118,6 +125,8 @@ In particular, `xgboost` relies on NVIDIA proprietary modules for the optional u
 
 
 ## References 📜
+
+<div align="justify">
 
 Hoeffding, W. (1948). A Class of Statistics with Asymptotically Normal Distribution.
 The Annals of Mathematical Statistics, 19:293 – 325.
@@ -143,13 +152,20 @@ models. In International Conference on Artificial Intelligence and Statistics, p
 Bénard, C. (2025). Tree Ensemble Explainability through the Hoeffding Functional Decomposition and
 TreeHFD Algorithm. In Advances in Neural Information Processing Systems 38 (NeurIPS 2025), in press. 
 
+</div>
+
 
 ## Example 🔎
+
+<div align="justify">
 
 The following code implements a simple case where **`treehfd`**
 estimates the Hoeffding decomposition of a XGBoost model, trained with simulated data.
 First, install `matplotlib` for the plots of the functional components of
 the decomposition, and then run the following Python script.
+
+</div>
+
 ```console
 pip install matplotlib
 ```
