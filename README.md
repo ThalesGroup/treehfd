@@ -7,6 +7,7 @@
   <img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg">
   <img src="https://img.shields.io/badge/python-3.11--3.13-blue">
   <img src="https://github.com/ThalesGroup/treehfd/actions/workflows/ci.yml/badge.svg?branch=main">
+  <img src="https://codecov.io/github/thalesgroup/treehfd/graph/badge.svg?token=KAV27C99T4"/>
   <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json">
   <img src="https://microsoft.github.io/pyright/img/pyright_badge.svg">
   <img src="https://img.shields.io/maintenance/yes/2099?style=flat-square">
