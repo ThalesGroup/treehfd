@@ -36,7 +36,7 @@ jobs:
           uv -v run coverage run -m pytest
           uv -v run coverage json
       
-      - name: Build doc
+      - name: Build docs
         run: |
-          cd doc
+          cd docs
           uv -v run sphinx-build -M html ./source ./build

@@ -94,9 +94,9 @@ first install `sphinx` and the relevant extensions.
 ```console
 pip install sphinx sphinx-rtd-theme
 ```
-Then, go to the `doc` folder and build the documentation by running:
+Then, go to the `docs` folder and build the documentation by running:
 ```console
-cd doc
+cd docs
 sphinx-build -M html ./source ./build
 ```
 Finally, open the html file `build/html/index.html` with a web browser to display the
