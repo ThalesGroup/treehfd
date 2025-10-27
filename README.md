@@ -9,6 +9,7 @@
   <img src="https://github.com/ThalesGroup/treehfd/actions/workflows/ci.yml/badge.svg?branch=main">
   <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json">
   <img src="https://microsoft.github.io/pyright/img/pyright_badge.svg">
+  <img src="https://img.shields.io/maintenance/yes/2099?style=flat-square">
 </p>  
 
 Clément Bénard (Thales cortAIx-Labs)
@@ -28,6 +29,9 @@ This decomposition breaks down XGBoost models into a sum of functions of one or
 two variables (respectively main effects and interactions), which are intrinsically
 explainable, while preserving the accuracy of the initial black-box model.
 
+**`treehfd`** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
+The documentation is available at [Read the Docs](https://treehfd.readthedocs.io/en/latest/).
+
 The TreeHFD algorithm is introduced in the following article: 
 **Bénard, C. (2025). Tree Ensemble Explainability through the Hoeffding Functional Decomposition and
 TreeHFD Algorithm. In Advances in Neural Information Processing Systems 38 (NeurIPS 2025), in press.** 
@@ -43,7 +47,6 @@ discretization of the hierarchical orthogonality constraints over the tree parti
 Such decomposition is proved to be piecewise constant over these partitions,
 and the values in each cell for all components are given by solving a least square problem for each tree.
 
-**`treehfd`** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
 
 </div>
 
@@ -89,7 +92,8 @@ Alternatively, `conda` or `uv` environnements can also be used instead of venv.
 
 ## Documentation 📖
 
-The documentation is generated with `sphinx` package. To build the documentation,
+The documentation is available at [Read the Docs](https://treehfd.readthedocs.io/en/latest/),
+and is generated with `sphinx` package. To build the documentation,
 first install `sphinx` and the relevant extensions.
 ```console
 pip install sphinx sphinx-rtd-theme
