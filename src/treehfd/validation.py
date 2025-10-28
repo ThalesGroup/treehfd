@@ -26,6 +26,10 @@ def check_xgb_model_type(xgb_model: xgb.sklearn.XGBModel) -> None:
                      "or xgboost.sklearn.XGBClassifier, built with the "
                      "scikit-learn interface of the xgboost package.")
         raise ValueError(error_msg)
+    if xgb_model.enable_categorical:
+        error_msg = ("treehfd does not support categorical variables. "
+                     "One-hot encoding should be used instead to fit xgboost.")
+        raise ValueError(error_msg)
 
 
 def check_xgb_model_learner(config: dict) -> None:

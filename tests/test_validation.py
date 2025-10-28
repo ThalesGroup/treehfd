@@ -28,6 +28,9 @@ def test_check_xgb_model_type() -> None:
     # Check fail.
     with pytest.raises(ValueError, match="xgb_model must be a xgboost model"):
         check_xgb_model_type("string")
+    xgb_model = xgb.XGBRegressor(enable_categorical=True)
+    with pytest.raises(ValueError, match="One-hot encoding should be used"):
+        check_xgb_model_type(xgb_model)
 
     # Check pass.
     xgb_model = xgb.XGBRegressor()

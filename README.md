@@ -30,8 +30,10 @@ This decomposition breaks down XGBoost models into a sum of functions of one or
 two variables (respectively main effects and interactions), which are intrinsically
 explainable, while preserving the accuracy of the initial black-box model.
 
-**`treehfd`** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
 The documentation is available at [Read the Docs](https://treehfd.readthedocs.io/en/latest/).
+**`treehfd`** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
+Numeric input variables are currently supported, and categorical variables should be one-hot encoded.
+
 
 The TreeHFD algorithm is introduced in the following article: 
 **Bénard, C. (2025). Tree Ensemble Explainability through the Hoeffding Functional Decomposition and
@@ -47,7 +49,6 @@ TreeHFD computes the Hoeffding decomposition of tree ensembles, based on a
 discretization of the hierarchical orthogonality constraints over the tree partitions.
 Such decomposition is proved to be piecewise constant over these partitions,
 and the values in each cell for all components are given by solving a least square problem for each tree.
-
 
 </div>
 

@@ -1,5 +1,5 @@
-treehfd documentation
-=====================
+Documentation of treehfd
+========================
 
 
 **treehfd** is a Python module to compute the Hoeffding functional decomposition
@@ -8,6 +8,11 @@ the TreeHFD algorithm.
 This decomposition breaks down XGBoost models into a sum of functions of one or 
 two variables (respectively main effects and interactions), which are intrinsically
 explainable, while preserving the accuracy of the initial black-box model.
+Numeric input variables are currently supported, and categorical variables should be one-hot encoded.
+
+
+Scientific Background
+---------------------
 
 The TreeHFD algorithm is introduced in the following article: 
 **Bénard, C. (2025). Tree Ensemble Explainability through the Hoeffding Functional Decomposition and
@@ -24,6 +29,10 @@ discretization of the hierarchical orthogonality constraints over the
 Cartesian tree partitions. Such decomposition is proved to be piecewise constant 
 over these partitions, and the values in each cell for all components are given 
 by solving a least square problem for each tree.
+
+
+Code Structure
+--------------
 
 **treehfd** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
 
