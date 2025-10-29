@@ -31,13 +31,13 @@ two variables (respectively main effects and interactions), which are intrinsica
 explainable, while preserving the accuracy of the initial black-box model.
 
 The TreeHFD algorithm is introduced in the following article: 
-**Bénard, C. (2025). Tree Ensemble Explainability through the Hoeffding Functional Decomposition and
-TreeHFD Algorithm. In Advances in Neural Information Processing Systems 38 (NeurIPS 2025), in press.** 
+[**Bénard, C. (2025). Tree Ensemble Explainability through the Hoeffding Functional Decomposition and TreeHFD Algorithm.
+In Advances in Neural Information Processing Systems 38 (NeurIPS 2025), in press.**](https://openreview.net/pdf?id=dRLWcpBQxS)
 
-The documentation is available at [Read the Docs](https://treehfd.readthedocs.io/en/latest/).
+The documentation is available at [**Read the Docs**](https://treehfd.readthedocs.io/en/latest/).
 
-XGBoost models for regression and binary classification with numeric input variables
-are currently supported, and categorical variables should be one-hot encoded.
+**`treehfd`** currently supports XGBoost models for regression and binary classification with numeric input variables,
+and categorical variables should be one-hot encoded.
 **`treehfd`** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
 
 </div>
@@ -173,6 +173,19 @@ In particular, `xgboost` relies on NVIDIA proprietary modules for the optional u
 
 
 ## References 📜
+
+Please use the following citation to refer to ``treehfd``:
+```r
+@inproceedings{
+  benard2025tree,
+  title={Tree Ensemble Explainability through the Hoeffding Functional Decomposition and Tree{HFD} Algorithm},
+  author={Clement Benard},
+  booktitle={The Thirty-ninth Annual Conference on Neural Information Processing Systems},
+  year={2025},
+  url={https://openreview.net/forum?id=dRLWcpBQxS}
+}
+```
+<br>
 
 <div align="justify">
 

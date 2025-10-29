@@ -9,16 +9,16 @@ This decomposition breaks down XGBoost models into a sum of functions of one or
 two variables (respectively main effects and interactions), which are intrinsically
 explainable, while preserving the accuracy of the initial black-box model.
 
-XGBoost models for regression and binary classification with numeric input variables are currently supported,
-and categorical variables should be one-hot encoded.
+**treehfd** currently supports XGBoost models for regression and binary classification
+with numeric input variables, and categorical variables should be one-hot encoded.
 
 
 Scientific Background
 ---------------------
 
 The TreeHFD algorithm is introduced in the following article: 
-**Bénard, C. (2025). Tree Ensemble Explainability through the Hoeffding Functional Decomposition and
-TreeHFD Algorithm. In Advances in Neural Information Processing Systems 38 (NeurIPS 2025), in press.** 
+`Bénard, C. (2025). Tree Ensemble Explainability through the Hoeffding Functional Decomposition and TreeHFD Algorithm.
+In Advances in Neural Information Processing Systems 38 (NeurIPS 2025), in press. <https://openreview.net/pdf?id=dRLWcpBQxS>`_
 
 More precisely, the Hoeffding decomposition was introduced by Hoeffding (1948)
 for independent input variables. More recently, Stone (1994) and Hooker (2007)
