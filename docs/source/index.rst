@@ -8,7 +8,9 @@ the TreeHFD algorithm.
 This decomposition breaks down XGBoost models into a sum of functions of one or 
 two variables (respectively main effects and interactions), which are intrinsically
 explainable, while preserving the accuracy of the initial black-box model.
-Numeric input variables are currently supported, and categorical variables should be one-hot encoded.
+
+XGBoost models for regression and binary classification with numeric input variables are currently supported,
+and categorical variables should be one-hot encoded.
 
 
 Scientific Background

@@ -30,37 +30,46 @@ This decomposition breaks down XGBoost models into a sum of functions of one or
 two variables (respectively main effects and interactions), which are intrinsically
 explainable, while preserving the accuracy of the initial black-box model.
 
-The documentation is available at [Read the Docs](https://treehfd.readthedocs.io/en/latest/).
-**`treehfd`** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
-Numeric input variables are currently supported, and categorical variables should be one-hot encoded.
-
-
 The TreeHFD algorithm is introduced in the following article: 
 **Bénard, C. (2025). Tree Ensemble Explainability through the Hoeffding Functional Decomposition and
 TreeHFD Algorithm. In Advances in Neural Information Processing Systems 38 (NeurIPS 2025), in press.** 
 
-More precisely, the Hoeffding decomposition was introduced by Hoeffding (1948)
-for independent input variables. More recently, Stone (1994) and Hooker (2007)
-extended the decomposition to the case of dependent input variables, where uniqueness
-of the decomposition is enforced by hierarchical orthogonality constraints. The estimation
-from a data sample in the dependent case is a notoriously difficult problem, and 
-therefore, the Hoeffding decomposition has long remain an abstract theoretical tool.
-TreeHFD computes the Hoeffding decomposition of tree ensembles, based on a 
-discretization of the hierarchical orthogonality constraints over the tree partitions.
-Such decomposition is proved to be piecewise constant over these partitions,
-and the values in each cell for all components are given by solving a least square problem for each tree.
+The documentation is available at [Read the Docs](https://treehfd.readthedocs.io/en/latest/).
+
+XGBoost models for regression and binary classification with numeric input variables
+are currently supported, and categorical variables should be one-hot encoded.
+**`treehfd`** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
 
 </div>
 
 
-## Illustration 💡
+## Installation 🛠️
+To install **`treehfd`**, run: `pip install treehfd`
+
+<div align="justify">
+
+To install from source, first clone this repository, create
+and activate a Python virtual environnement using **Python version >= 3.11**
+(`conda` or `uv` can also be used), and run pip at the root directory of the repository:
+
+</div>
+
+```console
+python -m venv .treehfd-env
+source .treehfd-env/bin/activate
+pip install .
+```
+
+
+## Example 🔎
 
 <div align="justify">
 
 The output of **`treehfd`** is illustrated with a standard dataset, the California Housing dataset,
 where housing prices are predicted from various features, such as the house locations, and
-characteristics of the house blocks. 
-The figure below shows the two main decomposition components for the `longitude` and `Latitude`
+characteristics of the house blocks. The code is provided below and in [examples](examples).
+
+The following figure shows the two main decomposition components for the `longitude` and `Latitude`
 variables of a black-box `xgboost` model, fitted with default parameters. 
 The **`treehfd`** decomposition is displayed in blue, and compared to the decomposition
 induced by `TreeSHAP` with interactions in red, which is directly implemented in `xgboost` package.
@@ -77,31 +86,64 @@ because main effects are entangled with interactions, while they are orthogonal 
 </div>
 
 
-## Installation 🛠️
+```python
+# Load packages.
+import xgboost as xgb
+from sklearn.datasets import fetch_california_housing
 
-To install **`treehfd`** from source, first clone this repository, and create
-and activate a Python virtual environnement using **Python version >= 3.11**:
-```console
-python -m venv .treehfd-env
-source .treehfd-env/bin/activate
+from treehfd import XGBTreeHFD
+
+if __name__ == "__main__":
+
+    # Fetch California Housing data.
+    california_housing = fetch_california_housing()
+    X = california_housing.data
+    y = california_housing.target
+
+    # Fit XGBoost model.
+    xgb_model = xgb.XGBRegressor(eta=0.3, n_estimators=100, max_depth=5)
+    xgb_model = xgb_model.fit(X, y)
+
+    # Fit TreeHFD.
+    treehfd_model = XGBTreeHFD(xgb_model)
+    treehfd_model.fit(X)
+
+    # Compute TreeHFD predictions.
+    y_main, y_order2 = treehfd_model.predict(X)
 ```
-Then, install **`treehfd`** by running pip at the root directory of the repository:
-```console
-pip install .
-```
-Alternatively, `conda` or `uv` environnements can also be used instead of venv.
+
+
+## Scientific Background
+
+<div align="justify">
+
+The Hoeffding decomposition was introduced by Hoeffding (1948)
+for independent input variables. More recently, Stone (1994) and Hooker (2007)
+extended the decomposition to the case of dependent input variables, where uniqueness
+of the decomposition is enforced by hierarchical orthogonality constraints. The estimation
+from a data sample in the dependent case is a notoriously difficult problem, and 
+therefore, the Hoeffding decomposition has long remain an abstract theoretical tool.
+TreeHFD computes the Hoeffding decomposition of tree ensembles, based on a 
+discretization of the hierarchical orthogonality constraints over the tree partitions.
+Such decomposition is proved to be piecewise constant over these partitions,
+and the values in each cell for all components are given by solving a least square problem for each tree.
+
+</div>
 
 
 ## Documentation 📖
 
+<div align="justify">
+
 The documentation is available at [Read the Docs](https://treehfd.readthedocs.io/en/latest/),
-and is generated with `sphinx` package. To build the documentation,
+and is generated with `sphinx` package. To build the documentation from source,
 first install `sphinx` and the relevant extensions.
+Then, go to the `docs` folder and build the documentation.
+
+</div>
+
 ```console
 pip install sphinx sphinx-rtd-theme
-```
-Then, go to the `docs` folder and build the documentation by running:
-```console
 cd docs
 sphinx-build -M html ./source ./build
 ```
@@ -159,79 +201,3 @@ Bénard, C. (2025). Tree Ensemble Explainability through the Hoeffding Functiona
 TreeHFD Algorithm. In Advances in Neural Information Processing Systems 38 (NeurIPS 2025), in press. 
 
 </div>
-
-
-## Example 🔎
-
-<div align="justify">
-
-The following code implements a simple case where **`treehfd`**
-estimates the Hoeffding decomposition of a XGBoost model, trained with simulated data.
-First, install `matplotlib` for the plots of the functional components of
-the decomposition, and then run the following Python script.
-
-</div>
-
-```console
-pip install matplotlib
-```
-```python
-# Load packages.
-import matplotlib.pyplot as plt
-import numpy as np
-import xgboost as xgb
-from numpy.random import default_rng
-
-from treehfd import XGBTreeHFD
-
-if __name__ == "__main__":
-
-    # Generate simulated data.
-    DIM = 6
-    NSAMPLE = 5000
-    RHO = 0.5
-    mu = np.zeros(DIM)
-    cov = np.full((DIM, DIM), RHO)
-    np.fill_diagonal(cov, np.ones(DIM))
-    X = default_rng().multivariate_normal(mean=mu, cov=cov, size=NSAMPLE)
-    y = np.sin(2*np.pi*X[:, 0]) + X[:, 0]*X[:, 1]  + X[:, 2]*X[:, 3]
-    y += default_rng().normal(loc=0.0, scale=0.5, size=NSAMPLE)
-
-    # Fit XGBoost model.
-    xgb_model = xgb.XGBRegressor(eta=0.1, n_estimators=100, max_depth=6)
-    xgb_model = xgb_model.fit(X, y)
-
-    # Generate testing data.
-    X_new = default_rng().multivariate_normal(mean=mu, cov=cov, size=NSAMPLE)
-    y_new = (np.sin(2*np.pi*X_new[:, 0]) + X_new[:, 0]*X_new[:, 1]
-            + X_new[:, 2]*X_new[:, 3])
-    y_new += default_rng().normal(loc=0.0, scale=0.5, size=NSAMPLE)
-
-    # Compute XGBoost predictions.
-    xgb_pred = xgb_model.predict(X_new)
-    q2 = 1 - (np.sum((y_new - xgb_pred)**2)
-              / np.sum((y_new - np.mean(y_new))**2))
-    q2 = np.round(q2, decimals=2)
-    print(f"Proportion of explained variance of XGBoost model: {q2}")
-
-    # Fit TreeHFD.
-    treehfd_model = XGBTreeHFD(xgb_model)
-    treehfd_model.fit(X, interaction_order=2)
-
-    # Compute TreeHFD predictions.
-    y_main, y_order2 = treehfd_model.predict(X_new)
-    hfd_pred = (treehfd_model.eta0 + np.sum(y_main, axis=1)
-                + np.sum(y_order2, axis=1))
-    resid = xgb_pred - hfd_pred
-    mse_resid = np.round(np.mean(resid**2) / np.var(xgb_pred), decimals=3)
-    print(f"Normalized MSE of TreeHFD residuals: {mse_resid}")
-
-    # Plot TreeHFD components.
-    fig, axs = plt.subplots(2, 2, figsize=(10, 6))
-    fig.suptitle("TreeHFD components for simulated data.")
-    for i in range(2):
-        for j in range(2):
-            axs[i, j].scatter(X_new[:, 2*i + j], y_main[:, 2*i + j])
-            axs[i, j].set_xlabel(f"X{2*i + j + 1}")
-    fig.savefig("trehfd_simulated_data.png")
-```

@@ -18,11 +18,11 @@ if __name__ == "__main__":
     xgb_model = xgb.XGBRegressor(eta=0.3, n_estimators=100, max_depth=6)
     xgb_model = xgb_model.fit(X, y)
 
-    # Fit TreeHFD ensemble.
+    # Fit TreeHFD.
     treehfd_model = XGBTreeHFD(xgb_model)
-    treehfd_model.fit(X, interaction_order=1)
+    treehfd_model.fit(X)
 
-    # Compute TreeHFD.
+    # Compute TreeHFD predictions.
     y_main, _ = treehfd_model.predict(X)
 
     # Plot TreeHFD components.
