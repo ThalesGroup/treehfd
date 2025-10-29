@@ -42,7 +42,7 @@ classifiers=[
 
 [project.urls]
 documentation = "https://treehfd.readthedocs.io/en/latest/"
-repository = "https://git.s3g-labs.trt/u1002/treehfd"
+repository = "https://github.com/ThalesGroup/treehfd"
 
 [project.optional-dependencies]
 examples = ["matplotlib"]
