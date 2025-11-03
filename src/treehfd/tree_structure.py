@@ -1,6 +1,6 @@
 """Functions to extract tree structure."""
 
-
+import ast
 import itertools
 
 import numpy as np
@@ -13,7 +13,8 @@ def get_params(config: dict) -> tuple:
                     ["tree_train_param"]["max_depth"])
     n_estimators = int(config["learner"]["gradient_booster"]
                        ["gbtree_model_param"]["num_trees"])
-    base_score = float(config["learner"]["learner_model_param"]["base_score"])
+    base_score_str = config["learner"]["learner_model_param"]["base_score"]
+    base_score = float(ast.literal_eval(base_score_str)[0])
     num_feature = int(config["learner"]["learner_model_param"]["num_feature"])
     num_parallel_tree = int(config["learner"]["gradient_booster"]
                             ["gbtree_model_param"]["num_parallel_tree"])
