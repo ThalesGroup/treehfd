@@ -5,7 +5,7 @@
 </div>
 <p align="center">
   <img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg">
-  <img src="https://img.shields.io/badge/python-3.11--3.13-blue">
+  <img src="https://img.shields.io/badge/python-3.11--3.14-blue">
   <img src="https://img.shields.io/pypi/v/treehfd">
   <img src="https://github.com/ThalesGroup/treehfd/actions/workflows/ci.yml/badge.svg?branch=main">
   <img src="https://codecov.io/github/thalesgroup/treehfd/graph/badge.svg?token=KAV27C99T4"/>

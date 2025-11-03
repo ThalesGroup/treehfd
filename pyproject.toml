@@ -10,7 +10,7 @@ authors = [
     {name = "Clement Benard", email = "clement-l.benard@thalesgroup.com"}
 ]
 description = "A python module to explain xgboost models with the Hoeffding functional decomposition."
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11"
 license = {text = "Apache-2.0"}
 keywords=[
     "machine learning",
@@ -35,6 +35,7 @@ classifiers=[
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Mathematics"
