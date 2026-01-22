@@ -61,13 +61,13 @@ class XGBTreeHFD:
     interaction_order : int, default=2
         Set to 1 to fit only main effects, or to 2 to also include
         second-order interactions in the TreeHFD decomposition.
+    interaction_list : np.array, default=np.empty((0, 0))
+        The list of interactions, defined as variable pairs.
     depth_variable : int, default=max_depth
         Variables are selected at the first depth_variable levels of the tree
         for the components of the decomposition. Set to max_depth by default.
     treehfd_list : list, default=[]
         The list of the TreeHFD decomposition for each tree.
-    interaction_list : np.array, default=np.empty((0, 0))
-        The list of interactions, defined as variable pairs.
     eta0 : float, default=0
         Intercept of the TreeHFD decomposition of xgb_model.
 
@@ -116,9 +116,9 @@ class XGBTreeHFD:
         self.num_feature: int = num_feature
         self.xgb_table = booster.trees_to_dataframe()
         self.interaction_order: int = 2
+        self.interaction_list = np.empty((0, 0))
         self.depth_variable: int = max_depth
         self.treehfd_list: list[TreeHFD] = []
-        self.interaction_list = np.empty((0, 0))
         self.eta0 = 0.0
 
     def fit(self, X: np.ndarray, interaction_order: int = 2,
