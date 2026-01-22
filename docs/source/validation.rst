@@ -18,6 +18,9 @@ Validation
 .. autofunction:: treehfd.validation.check_xgb_model_learner
 .. autofunction:: treehfd.validation.check_xgb_params
 .. autofunction:: treehfd.validation.check_data
+.. autofunction:: treehfd.validation.check_interaction_order
+.. autofunction:: treehfd.validation.check_interaction_list
+.. autofunction:: treehfd.validation.check_depth_variable
 .. autofunction:: treehfd.validation.sample_data
 .. autofunction:: treehfd.validation.eta_main
 .. autofunction:: treehfd.validation.eta_order2
