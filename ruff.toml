@@ -25,7 +25,8 @@ convention = "numpy"
 ]
 "tests/*.py" = [
   "PLR2004",
-  "S101"
+  "S101",
+  "SLF001"
 ]
 "examples/*.py" = [
   "T201",

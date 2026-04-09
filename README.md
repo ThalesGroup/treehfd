@@ -39,6 +39,7 @@ The documentation is available at [**Read the Docs**](https://treehfd.readthedoc
 
 **`treehfd`** currently supports XGBoost models for regression and binary classification with numeric input variables,
 and categorical variables should be one-hot encoded.
+Both gradient boosting models and random forests are supported, but not boosted forests.
 **`treehfd`** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
 
 </div>

@@ -79,7 +79,7 @@ def test_check_xgb_params() -> None:
     # Check fail for num_parallel_tree.
     n_estimators = 100
     num_parallel_tree = 2
-    with pytest.raises(ValueError, match="num_parallel_tree must set to 1"):
+    with pytest.raises(ValueError, match="num_parallel_tree must be set to 1"):
         check_xgb_params(max_depth, n_estimators, num_parallel_tree, num_target)
 
     # Check fail for num_target.
@@ -88,11 +88,17 @@ def test_check_xgb_params() -> None:
     with pytest.raises(ValueError, match="num_target must be 1"):
         check_xgb_params(max_depth, n_estimators, num_parallel_tree, num_target)
 
-    # Check pass.
+    # Check pass for gradient boosting models.
     max_depth = 3
     n_estimators = 100
     num_parallel_tree = 1
     num_target = 1
+    assert check_xgb_params(max_depth, n_estimators, num_parallel_tree,
+                            num_target) is None
+
+    # Check pass for random forests.
+    num_parallel_tree = 100
+    n_estimators = num_parallel_tree
     assert check_xgb_params(max_depth, n_estimators, num_parallel_tree,
                             num_target) is None
 
