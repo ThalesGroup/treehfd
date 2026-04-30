@@ -47,7 +47,8 @@ def check_xgb_params(max_depth: int, n_estimators: int,
     """Check values of xgboost model parameters."""
     depth_check = max_depth > 0
     n_estimators_check = n_estimators > 0
-    num_parallel_tree_check = num_parallel_tree == 1
+    num_parallel_tree_check = ((num_parallel_tree == 1 and n_estimators > 1) or
+                               (num_parallel_tree == n_estimators))
     num_target_check = num_target == 1
     error_msg = ""
     if not n_estimators_check:
@@ -58,7 +59,11 @@ def check_xgb_params(max_depth: int, n_estimators: int,
         error_msg = "xgboost model must have a stricly positive tree depth."
         raise ValueError(error_msg)
     if not num_parallel_tree_check:
-        error_msg = "num_parallel_tree must set to 1."
+        error_msg = ("For gradient boosting models, num_parallel_tree must be "
+                     "set to 1 and n_estimators is the number of trees (>= 1). "
+                     "Or, for random forests, n_estimators must be set to 1 "
+                     "and num_parallel_tree is the number of trees (>= 1). "
+                     "Boosted forests are currently not supported.")
         raise ValueError(error_msg)
     if not num_target_check:
         error_msg = "num_target must be 1."

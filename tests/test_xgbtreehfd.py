@@ -146,6 +146,38 @@ def test_xgbtreehfd_fit() -> None:
     assert treehfd_model.depth_variable == 2
 
 
+def test_tree_predict() -> None:
+    """Test _tree_predict method of XGBTreeHFD class."""
+    np.random.default_rng(11)
+    X = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_X_n100_seed11.csv",
+                      delimiter=",")
+    y = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_y_n100_seed11.csv",
+                      delimiter=",")
+    np.random.default_rng(61)
+    X_new = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_X_n1000_seed61.csv",
+                      delimiter=",")
+
+    # Tree predictions for gradient boosting models.
+    xgb_model = xgb.XGBRegressor(n_estimators=10, max_depth=3)
+    xgb_model = xgb_model.fit(X, y)
+    xgb_predictions = xgb_model.predict(X_new)
+    treehfd_model = XGBTreeHFD(xgb_model)
+    tree_predictions = treehfd_model._tree_predict(X_new)
+    error = np.mean(np.abs(np.sum(tree_predictions, axis=1) - xgb_predictions))
+    assert error < 10**-6
+
+    # Tree predictions for random forests.
+    xgb_model = xgb.XGBRegressor(num_parallel_tree=10, n_estimators=1,
+        learning_rate=1, subsample=0.7, colsample_bynode=1/np.sqrt(X.shape[1]),
+        max_depth=3)
+    xgb_model = xgb_model.fit(X, y)
+    xgb_predictions = xgb_model.predict(X_new)
+    treehfd_model = XGBTreeHFD(xgb_model)
+    tree_predictions = treehfd_model._tree_predict(X_new)
+    error = np.mean(np.abs(np.sum(tree_predictions, axis=1) - xgb_predictions))
+    assert error < 10**-6
+
+
 def test_xgbtreehfd_predict() -> None:
     """Test predict method of XGBTreeHFD class."""
     np.random.default_rng(11)
@@ -222,6 +254,57 @@ def test_xgbtreehfd_accuracy() -> None:
     y = [int(x) for x in prob > 0.5]
     xgb_model = xgb.XGBClassifier(objective="binary:logistic",
                                   n_estimators=100, max_depth=3)
+    xgb_model = xgb_model.fit(X, y)
+    treehfd_model = XGBTreeHFD(xgb_model)
+    treehfd_model.fit(X)
+    y_main, y_order2 = treehfd_model.predict(X_new)
+    hfd_pred = (treehfd_model.eta0 + np.sum(y_main, axis=1)
+                + np.sum(y_order2, axis=1))
+    xgb_pred = xgb_model.predict(X_new, output_margin=True)
+    mse_resid_classif = np.mean((xgb_pred - hfd_pred)**2)/np.var(xgb_pred)
+    assert mse_resid_classif < 0.02
+
+
+def test_xgbtreehfd_random_forests() -> None:
+    """Test treehfd for random forests."""
+    DIM = 6
+    RHO = 0.5
+    np.random.default_rng(61)
+    X = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_X_n1000_seed61.csv",
+                      delimiter=",")
+    y = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_y_n1000_seed61.csv",
+                      delimiter=",")
+
+    # Test regression for random forests.
+    xgb_model = xgb.XGBRegressor(num_parallel_tree=100, n_estimators=1,
+        learning_rate=1, subsample=0.7, colsample_bynode=1/np.sqrt(X.shape[1]),
+        max_depth=3)
+    xgb_model = xgb_model.fit(X, y)
+    treehfd_model = XGBTreeHFD(xgb_model)
+    treehfd_model.fit(X)
+    np.random.default_rng(11)
+    X_new = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_X_n100_seed11.csv",
+                          delimiter=",")
+    y_main, y_order2 = treehfd_model.predict(X_new)
+    hfd_pred = (treehfd_model.eta0 + np.sum(y_main, axis=1)
+                + np.sum(y_order2, axis=1))
+    xgb_pred = xgb_model.predict(X_new)
+    mse_resid_reg = np.mean((xgb_pred - hfd_pred)**2)/np.var(xgb_pred)
+    assert mse_resid_reg < 0.02
+    y_exact = np.zeros((100, DIM))
+    y_exact[:, 0] = np.sin(2*np.pi*X_new[:, 0]) + eta_main(X_new[:, 0], RHO)
+    for j in range(1, DIM - 2):
+        y_exact[:, j] = eta_main(X_new[:, j], RHO)
+    mse_main = np.mean((y_exact - y_main)**2, axis=0)
+    cumulated_mse = np.sum(mse_main)
+    assert cumulated_mse < 1.0
+
+    # Test binary classification for random forests.
+    prob = 1/(1 + np.exp(-(y - 1.0)))
+    y = [int(x) for x in prob > 0.5]
+    xgb_model = xgb.XGBClassifier(num_parallel_tree=100, n_estimators=1,
+        learning_rate=1, subsample=0.7, colsample_bynode=1/np.sqrt(X.shape[1]),
+        max_depth=3)
     xgb_model = xgb_model.fit(X, y)
     treehfd_model = XGBTreeHFD(xgb_model)
     treehfd_model.fit(X)

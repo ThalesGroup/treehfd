@@ -11,6 +11,8 @@ explainable, while preserving the accuracy of the initial black-box model.
 
 **treehfd** currently supports XGBoost models for regression and binary classification
 with numeric input variables, and categorical variables should be one-hot encoded.
+Both gradient boosting models and random forests are supported, but not boosted
+forests.
 
 
 Scientific Background
