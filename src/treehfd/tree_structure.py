@@ -132,7 +132,7 @@ def extract_variable_paths(tree_structure: tuple, depth_variable: int) -> list:
         if depth == depth_variable - 2:
             var_paths_final += var_paths
     # Deduplication of variable lists.
-    return [list(set(x)) for x in var_paths_final]
+    return [sorted(set(x)) for x in var_paths_final]
 
 
 def extract_variables(variable_paths: list[list[int]]) -> np.ndarray:
