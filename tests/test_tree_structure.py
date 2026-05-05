@@ -84,6 +84,9 @@ def test_extract_variable_paths() -> None:
     assert variable_paths == [[0, 2, 3], [0, 1, 3], [0, 1, 3]]
     variable_paths = extract_variable_paths(tree_structure, depth_variable=7)
     assert variable_paths == [[0, 2, 3], [0, 1, 3], [0, 1, 3]]
+    tree_structure[0][0] = 8
+    variable_paths = extract_variable_paths(tree_structure, depth_variable=7)
+    assert variable_paths == [[0, 2, 8], [0, 1, 8], [0, 1, 8]]
 
 
 def test_extract_variables() -> None:
