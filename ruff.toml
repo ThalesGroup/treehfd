@@ -30,7 +30,6 @@ convention = "numpy"
   "SLF001"
 ]
 "examples/*.py" = [
-  "T201",
   "INP001"
 ]
 "ensemble.py" = [

@@ -1,12 +1,22 @@
 """Example of treehfd with simulated data for readme."""
 
 # Load packages.
+import logging
+
 import matplotlib.pyplot as plt
 import numpy as np
 import xgboost as xgb
 from numpy.random import default_rng
 
 from treehfd import XGBTreeHFD
+
+# Set up logger.
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()],
+)
+logger = logging.getLogger(__name__)
+
 
 if __name__ == "__main__":
 
@@ -36,7 +46,8 @@ if __name__ == "__main__":
     q2 = 1 - (np.sum((y_new - xgb_pred)**2)
               / np.sum((y_new - np.mean(y_new))**2))
     q2 = np.round(q2, decimals=2)
-    print(f"Proportion of explained variance of XGBoost model: {q2}")
+    msg_acc = f"Proportion of explained variance of XGBoost model: {q2}"
+    logger.info(msg_acc)
 
     # Fit TreeHFD.
     treehfd_model = XGBTreeHFD(xgb_model)
@@ -48,7 +59,8 @@ if __name__ == "__main__":
                 + np.sum(y_order2, axis=1))
     resid = xgb_pred - hfd_pred
     mse_resid = np.round(np.mean(resid**2) / np.var(xgb_pred), decimals=3)
-    print(f"Normalized MSE of TreeHFD residuals: {mse_resid}")
+    msg_resid = f"Normalized MSE of TreeHFD residuals: {mse_resid}"
+    logger.info(msg_resid)
 
     # Plot TreeHFD components.
     fig, axs = plt.subplots(2, 2, figsize=(10, 6))
