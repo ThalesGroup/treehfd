@@ -267,7 +267,7 @@ def test_get_output_idx() -> None:
     labels = np.zeros(X.shape[0], dtype=int)
     labels[y > 0] = 1
     labels[y > 1] = 2
-    
+
     # Test gradient boosting models.
     xgb_model = xgb.XGBClassifier(n_estimators=4, max_depth=2)
     xgb_model = xgb_model.fit(X, labels)
