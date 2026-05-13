@@ -9,19 +9,24 @@ import pandas as pd
 
 def get_params(config: dict) -> tuple:
     """Extract main parameters of tree ensemble from config."""
-    max_depth = int(config["learner"]["gradient_booster"]
-                    ["tree_train_param"]["max_depth"])
-    n_estimators = int(config["learner"]["gradient_booster"]
-                       ["gbtree_model_param"]["num_trees"])
-    base_score_str = config["learner"]["learner_model_param"]["base_score"]
-    base_score = float(ast.literal_eval(base_score_str)[0])
-    num_feature = int(config["learner"]["learner_model_param"]["num_feature"])
-    num_parallel_tree = int(config["learner"]["gradient_booster"]
-                            ["gbtree_model_param"]["num_parallel_tree"])
-    num_target = int(config["learner"]["learner_model_param"]["num_target"])
+    config_booster = config["learner"]["gradient_booster"]
+    max_depth = int(config_booster["tree_train_param"]["max_depth"])
+    n_estimators = int(config_booster["gbtree_model_param"]["num_trees"])
+    num_parallel_tree = int(config_booster["gbtree_model_param"]
+                            ["num_parallel_tree"])
+
+    config_param = config["learner"]["learner_model_param"]
+    base_score_str = config_param["base_score"]
+    base_score = np.array(ast.literal_eval(base_score_str))
+    num_feature = int(config_param["num_feature"])
+    num_target = int(config_param["num_target"])
+    num_class = int(config_param["num_class"])
+
+    if num_class > 1:
+        n_estimators = int(n_estimators / num_class)
 
     return(max_depth, n_estimators, base_score, num_feature,
-           num_parallel_tree, num_target)
+           num_parallel_tree, num_target, num_class)
 
 
 def extract_child_ids(child_id: str) -> int:

@@ -51,10 +51,16 @@ class XGBTreeHFD:
         Tree depth parameter of xgb_model (must be greater than 0).
     n_estimators : int
         Number of trees of xgb_model (must be greater than 0).
-    base_score : float
+    base_score : np.ndarray
         Base score of xgb_model.
     num_feature : int
         The number of variables of the data used to fit xgb_model.
+    num_parallel_tree: int
+        The number of trees in random forests (1 for gradient boosting models).
+    num_outputs: int
+        The number of model outputs: 1 for regression and binary
+        classification, and the number of classes for multiclass
+        classification.
     xgb_table : pd.core.frame.DataFrame
         The table with the tree structures, obtained from
         xgb_model.get_booster().trees_to_dataframe().
@@ -68,8 +74,10 @@ class XGBTreeHFD:
         for the components of the decomposition. Set to max_depth by default.
     treehfd_list : list, default=[]
         The list of the TreeHFD decomposition for each tree.
-    eta0 : float, default=0
+    eta0 : float | np.ndarray, default=0
         Intercept of the TreeHFD decomposition of xgb_model.
+        For multiclass classification, eta0 is an array with the intercept of
+        each logit decomposition.
 
     Examples
     --------
@@ -104,7 +112,7 @@ class XGBTreeHFD:
         config = json.loads(booster.save_config())
         check_xgb_model_learner(config)
         (max_depth, n_estimators, base_score, num_feature,
-         num_parallel_tree, num_target) = get_params(config)
+         num_parallel_tree, num_target, num_class) = get_params(config)
         check_xgb_params(max_depth, n_estimators, num_parallel_tree, num_target)
 
         # Initialize TreeHFD.
@@ -112,15 +120,16 @@ class XGBTreeHFD:
         self.config = config
         self.max_depth: int = max_depth
         self.n_estimators: int = n_estimators
-        self.base_score: float = base_score
+        self.base_score: np.ndarray = base_score
         self.num_feature: int = num_feature
         self.num_parallel_tree: int = num_parallel_tree
+        self.num_outputs: int = max(1, num_class)
         self.xgb_table = booster.trees_to_dataframe()
         self.interaction_order: int = 2
         self.interaction_list = np.empty((0, 0))
         self.depth_variable: int = max_depth
         self.treehfd_list: list[TreeHFD] = []
-        self.eta0 = 0.0
+        self.eta0: float | np.ndarray = 0.0
 
     def fit(self, X: np.ndarray, interaction_order: int = 2,
             interaction_list: np.ndarray | None = None,
@@ -163,9 +172,10 @@ class XGBTreeHFD:
         # Fit TreeHFD decomposition for each tree.
         self.treehfd_list = []
         self.interaction_list = np.empty((0, 0), dtype=int)
-        self.eta0 = 0
+        self.eta0 = np.zeros(self.num_outputs)
         interaction_list_raw: list[list[list[int]]] = []
-        for tree_idx in tqdm(range(self.n_estimators), disable=not verbose):
+        num_trees = self.n_estimators * self.num_outputs
+        for tree_idx in tqdm(range(num_trees), disable=not verbose):
             tree_table = pd.DataFrame(
                 self.xgb_table[self.xgb_table["Tree"] == tree_idx])
             y_tree = tree_predictions[:, tree_idx]
@@ -173,59 +183,14 @@ class XGBTreeHFD:
                            self.depth_variable)
             tree.fit(X, y_tree)
             self.treehfd_list.append(tree)
-            self.eta0 += tree.eta0
+            self.eta0[self._get_output_idx(tree_idx)] += tree.eta0
             interaction_list_raw.append(tree.interaction_list)
+        if self.num_outputs == 1:
+            self.eta0 = float(self.eta0[0])
         interaction_list_raw = [x for x in interaction_list_raw if len(x) > 0]
         if len(interaction_list_raw) > 0:
             self.interaction_list = np.unique(np.concatenate(
                                         interaction_list_raw, axis=0), axis=0)
-
-    def _tree_predict(self,  X: np.ndarray) -> np.ndarray:
-        """Compute the original predictions of each tree.
-
-        Parameters
-        ----------
-        X : np.ndarray
-            The input data where tree predictions are computed.
-
-        Returns
-        -------
-        tree_predictions: np.ndarray
-            Array with the predictions of each tree of the ensemble for X,
-            where each column stores the predictions of a tree.
-        """
-        tree_predictions = np.zeros((X.shape[0], self.n_estimators))
-        # Compute predictions for gradient boosting model.
-        if self.num_parallel_tree == 1:
-            for tree_idx in range(self.n_estimators):
-                tree_predictions[:, tree_idx] = self.xgb_model.predict(
-                    X, iteration_range=(tree_idx, tree_idx + 1),
-                    output_margin=True)
-            ratio_score = (self.n_estimators - 1)/self.n_estimators
-            if self.config["learner"]["objective"]["name"] != "binary:logistic":
-                tree_predictions -= ratio_score * self.base_score
-            else:
-                tree_predictions -= ratio_score * logit(self.base_score)
-
-        # Compute predictions for random forests.
-        else:
-            booster = self.xgb_model.get_booster()
-            leaf_indices = booster.predict(xgb.DMatrix(X), pred_leaf=True,
-                                           strict_shape=True)
-            for tree_idx in range(self.n_estimators):
-                tree_leaves = leaf_indices[:, 0, 0, tree_idx]
-                tree_table = self.xgb_table[(self.xgb_table["Tree"] == tree_idx)
-                                 & (self.xgb_table["Feature"] == "Leaf")]
-                leaf_value_map = dict(zip(tree_table["Node"].astype(int),
-                                          tree_table["Gain"], strict=True))
-                tree_predictions[:, tree_idx] = np.array([
-                    leaf_value_map[int(leaf)] for leaf in tree_leaves])
-            if self.config["learner"]["objective"]["name"] != "binary:logistic":
-                tree_predictions += self.base_score / self.n_estimators
-            else:
-                tree_predictions += logit(self.base_score) / self.n_estimators
-
-        return tree_predictions
 
     def predict(self, X_new: np.ndarray, verbose: bool = True) -> tuple:
         """Predict TreeHFD components for new input data.
@@ -254,18 +219,88 @@ class XGBTreeHFD:
         check_data(X_new, "X_new", self.num_feature)
 
         # Compute and aggregate tree predictions.
-        y_main = np.zeros_like(X_new)
-        y_order2 = np.zeros((X_new.shape[0], self.interaction_list.shape[0]))
-        for tree_idx in tqdm(range(self.n_estimators), disable=not verbose):
+        y_main = np.zeros((X_new.shape[0], self.num_outputs, X_new.shape[1]))
+        y_order2 = np.zeros((X_new.shape[0], self.num_outputs,
+                             self.interaction_list.shape[0]))
+        num_trees = self.n_estimators * self.num_outputs
+        for tree_idx in tqdm(range(num_trees), disable=not verbose):
+            output_idx = self._get_output_idx(tree_idx)
             tree = self.treehfd_list[tree_idx]
             y_main_tree, y_order2_tree = tree.predict(X_new)
             main_variables = tree.cartesian_partition.main_variables
-            y_main[:, main_variables] += y_main_tree
+            y_main[:, output_idx, main_variables] += y_main_tree
             interaction_index = []
             for interaction in tree.interaction_list:
                 idx = np.where(np.all(self.interaction_list == interaction,
                                       axis=1))[0].tolist()
                 interaction_index += idx
-            y_order2[:, interaction_index] += y_order2_tree
+            y_order2[:, output_idx, interaction_index] += y_order2_tree
+        y_main, y_order2 = np.squeeze(y_main), np.squeeze(y_order2)
 
         return(y_main, y_order2)
+
+    def _tree_predict(self,  X: np.ndarray) -> np.ndarray:
+        """Compute the original predictions of each tree.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            The input data where tree predictions are computed.
+
+        Returns
+        -------
+        tree_predictions: np.ndarray
+            Array with the predictions of each tree of the ensemble for X,
+            where each column stores the predictions of a tree.
+        """
+        if self.config["learner"]["objective"]["name"] != "binary:logistic":
+            base_score = self.base_score
+        else:
+            base_score = logit(self.base_score)
+        tree_predictions = np.zeros((X.shape[0],
+                                     self.num_outputs * self.n_estimators))
+
+        # Compute predictions for gradient boosting model.
+        if self.num_parallel_tree == 1:
+            tree_base_score = (base_score * (self.n_estimators - 1)/
+                               self.n_estimators)
+            for round_idx in range(self.n_estimators):
+                round_predictions = self.xgb_model.predict(X,
+                    iteration_range=(round_idx, round_idx + 1),
+                    output_margin=True) - tree_base_score
+                if self.num_outputs == 1:
+                    tree_predictions[:, round_idx] = round_predictions
+                else:
+                    start_idx = self.num_outputs * round_idx
+                    end_idx = start_idx + self.num_outputs
+                    tree_predictions[:, start_idx:end_idx] = round_predictions
+
+        # Compute predictions for random forests.
+        else:
+            tree_base_score = base_score / self.n_estimators
+            booster = self.xgb_model.get_booster()
+            leaf_indices = booster.predict(xgb.DMatrix(X), pred_leaf=True,
+                                           strict_shape=True)
+            for round_idx in range(self.n_estimators):
+                for output_idx in range(self.num_outputs):
+                    tree_idx = output_idx * self.n_estimators + round_idx
+                    tree_leaves = leaf_indices[:, 0, output_idx, round_idx]
+                    tree_table = self.xgb_table[(self.xgb_table["Tree"]
+                        == tree_idx) & (self.xgb_table["Feature"] == "Leaf")]
+                    leaf_value_map = dict(zip(tree_table["Node"].astype(int),
+                                              tree_table["Gain"], strict=True))
+                    tree_predictions[:, tree_idx] = (np.array([
+                        leaf_value_map[int(leaf)] for leaf in tree_leaves])
+                        + tree_base_score[output_idx])
+
+        return tree_predictions
+
+    def _get_output_idx(self, tree_idx: int) -> int:
+        """Get output index from tree_idx."""
+        if self.num_outputs == 1:
+            return 0
+        if self.num_parallel_tree == 1:
+            output_idx = tree_idx % self.num_outputs
+        else:
+            output_idx = tree_idx // self.n_estimators
+        return output_idx

@@ -18,10 +18,10 @@ def check_xgb_model_type(xgb_model: xgb.sklearn.XGBModel) -> None:
                                          xgb.sklearn.XGBClassifier))
     if type_check:
         objective = str(xgb_model.objective).split(":")[0]
-        type_check = objective in ("reg", "binary")
+        type_check = objective in ("reg", "binary", "multi")
     if not type_check:
         error_msg = ("xgb_model must be a xgboost model for regression or "
-                     "binary classification, respectively of type "
+                     "classification, respectively of type "
                      "xgboost.sklearn.XGBRegressor "
                      "or xgboost.sklearn.XGBClassifier, built with the "
                      "scikit-learn interface of the xgboost package.")
