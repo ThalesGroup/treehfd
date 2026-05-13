@@ -36,6 +36,8 @@ def test_check_xgb_model_type() -> None:
     # Check pass.
     xgb_model = xgb.XGBRegressor()
     assert check_xgb_model_type(xgb_model) is None
+    xgb_model = xgb.XGBClassifier(objective="multi:softmax")
+    assert check_xgb_model_type(xgb_model) is None
 
 
 def test_check_xgb_model_learner() -> None:
