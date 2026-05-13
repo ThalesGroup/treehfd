@@ -9,8 +9,8 @@ from numpy.random import default_rng
 def check_xgb_model_type(xgb_model: xgb.sklearn.XGBModel) -> None:
     """Check xgb_model type.
 
-    Check that xgb_model is a xgboost model for regression or binary
-    classification, of type xgboost.sklearn.XGBRegressor
+    Check that xgb_model is a xgboost model for regression or
+    classification, respectively of type xgboost.sklearn.XGBRegressor
     or xgboost.sklearn.XGBClassifier, built with the scikit-learn
     interface of the xgboost package.
     """

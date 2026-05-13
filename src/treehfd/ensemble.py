@@ -37,7 +37,7 @@ class XGBTreeHFD:
     Parameters
     ----------
     xgb_model : xgb.sklearn.XGBModel
-        The xgboost model for regression or binary classification to be
+        The xgboost model for regression or classification to be
         decomposed with TreeHFD.
 
     Attributes
@@ -50,19 +50,21 @@ class XGBTreeHFD:
     max_depth : int
         Tree depth parameter of xgb_model (must be greater than 0).
     n_estimators : int
-        Number of trees of xgb_model (must be greater than 0).
+        Number of trees of xgb_model (must be greater than 0). For multiclass
+        classification, there are n_estimators trees for each logit.
     base_score : np.ndarray
-        Base score of xgb_model.
+        Base scores of xgb_model.
     num_feature : int
         The number of variables of the data used to fit xgb_model.
     num_parallel_tree: int
-        The number of trees in random forests (1 for gradient boosting models).
+        The number of trees in random forests (one for gradient boosting
+        models).
     num_outputs: int
-        The number of model outputs: 1 for regression and binary
+        The number of model outputs: one for regression and binary
         classification, and the number of classes for multiclass
         classification.
     xgb_table : pd.core.frame.DataFrame
-        The table with the tree structures, obtained from
+        The table with the tree structures, obtained from the xgboost methods
         xgb_model.get_booster().trees_to_dataframe().
     interaction_order : int, default=2
         Set to 1 to fit only main effects, or to 2 to also include
@@ -72,8 +74,10 @@ class XGBTreeHFD:
     depth_variable : int, default=max_depth
         Variables are selected at the first depth_variable levels of the tree
         for the components of the decomposition. Set to max_depth by default.
+        Reducing depth_variable strongly speeds up computations for deep trees.
     treehfd_list : list, default=[]
-        The list of the TreeHFD decomposition for each tree.
+        The list of the TreeHFD decomposition for each tree. For multiclass
+        classification, all trees are stacked together.
     eta0 : float | np.ndarray, default=0
         Intercept of the TreeHFD decomposition of xgb_model.
         For multiclass classification, eta0 is an array with the intercept of
@@ -207,10 +211,14 @@ class XGBTreeHFD:
         -------
         tuple
             y_main : np.ndarray
-                array for the predictions of main effects
+                Array for the predictions of main effects. For multiclass
+                classification, y_main is an array of order three, with the
+                prediction matrix for each label.
             y_order2 : np.ndarray
-                array for predictions of second-order interactions
+                Array for predictions of second-order interactions
                 (columns are ordered according to interaction_list).
+                For multiclass classification, y_order2 is an array of order
+                three, with the prediction matrix for each label.
         """
         # Check inputs.
         if len(self.treehfd_list) == 0:
@@ -251,7 +259,8 @@ class XGBTreeHFD:
         -------
         tree_predictions: np.ndarray
             Array with the predictions of each tree of the ensemble for X,
-            where each column stores the predictions of a tree.
+            where each column stores the predictions of a tree. For multiclass
+            classification, all trees are stacked together.
         """
         if self.config["learner"]["objective"]["name"] != "binary:logistic":
             base_score = self.base_score
