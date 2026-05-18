@@ -243,7 +243,9 @@ class XGBTreeHFD:
                                       axis=1))[0].tolist()
                 interaction_index += idx
             y_order2[:, output_idx, interaction_index] += y_order2_tree
-        y_main, y_order2 = np.squeeze(y_main), np.squeeze(y_order2)
+        if self.num_outputs == 1:
+            y_main = np.squeeze(y_main, axis=1)
+            y_order2 = np.squeeze(y_order2, axis=1)
 
         return(y_main, y_order2)
 
