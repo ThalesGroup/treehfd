@@ -116,9 +116,9 @@ def test_xgbtreehfd_fit() -> None:
     assert np.array_equal(tree_partition.cell_list[1],
                           cartesian_partition.cell_list[1])
     assert np.array_equal(tree_partition.counts_list[0],
-                          tree_partition.counts_list[0])
+                          cartesian_partition.counts_list[0])
     assert np.array_equal(tree_partition.counts_list[1],
-                          tree_partition.counts_list[1])
+                          cartesian_partition.counts_list[1])
     assert np.array_equal(np.round(treehfd_model.treehfd_list[0].hfd_coeffs,
                                    decimals=2),
                           np.array([-0.02, 0.02, 1.01, -0.05, -0.05, 1.17,
