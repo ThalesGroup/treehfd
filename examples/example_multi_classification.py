@@ -50,8 +50,6 @@ if __name__ == "__main__":
     # Accuracy of XGBoost.
     xgb_labels = xgb_model.predict(X_new)
     xgb_acc = np.sum(label_new == xgb_labels) / NSAMPLE
-    msg_acc = "Classification accuracy of XGBoost model: {xgb_acc}"
-    logger.info(msg_acc)
 
     # Fit TreeHFD.
     treehfd_model = XGBTreeHFD(xgb_model)
