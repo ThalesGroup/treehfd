@@ -77,7 +77,10 @@ class XGBTreeHFD:
         Reducing depth_variable strongly speeds up computations for deep trees.
     treehfd_list : list, default=[]
         The list of the TreeHFD decomposition for each tree. For multiclass
-        classification, all trees are stacked together.
+        classification, all trees are stacked together following the index of
+        xgb_table: for gradient boosting models, the trees of the same boosting
+        round are stored next to each other, whereas for random forests, the
+        trees of the same logit are stored next to each other.
     eta0 : float | np.ndarray, default=0
         Intercept of the TreeHFD decomposition of xgb_model.
         For multiclass classification, eta0 is an array with the intercept of
@@ -213,7 +216,8 @@ class XGBTreeHFD:
             y_main : np.ndarray
                 Array for the predictions of main effects. For multiclass
                 classification, y_main is an array of order three, with the
-                prediction matrix for each label.
+                prediction matrix for each label (axis 0: data samples,
+                axis 1: labels, axis 2: input variables).
             y_order2 : np.ndarray
                 Array for predictions of second-order interactions
                 (columns are ordered according to interaction_list).
@@ -261,8 +265,9 @@ class XGBTreeHFD:
         -------
         tree_predictions: np.ndarray
             Array with the predictions of each tree of the ensemble for X,
-            where each column stores the predictions of a tree. For multiclass
-            classification, all trees are stacked together.
+            where each column stores the predictions of a tree.
+            For multiclass classification, all trees are stacked together
+            following the index of xgb_table (see treehfd_list doc).
         """
         if self.config["learner"]["objective"]["name"] != "binary:logistic":
             base_score = self.base_score
@@ -307,7 +312,20 @@ class XGBTreeHFD:
         return tree_predictions
 
     def _get_output_idx(self, tree_idx: int) -> int:
-        """Get output index from tree_idx."""
+        """Get output index from tree_idx.
+
+        Parameters
+        ----------
+        tree_idx: int
+            The tree index from xgb_table.
+
+        Returns
+        -------
+        output_idx: int
+            Index of the output modeled by the tree of index tree_idx. Notice
+            that output_idx is always 0 for regression and binary
+            classification.
+        """
         if self.num_outputs == 1:
             return 0
         if self.num_parallel_tree == 1:
