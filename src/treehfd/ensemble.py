@@ -179,7 +179,7 @@ class XGBTreeHFD:
         # Fit TreeHFD decomposition for each tree.
         self.treehfd_list = []
         self.interaction_list = np.empty((0, 0), dtype=int)
-        self.eta0 = np.zeros(self.num_outputs)
+        eta0 = np.zeros(self.num_outputs)
         interaction_list_raw: list[list[list[int]]] = []
         num_trees = self.n_estimators * self.num_outputs
         for tree_idx in tqdm(range(num_trees), disable=not verbose):
@@ -190,10 +190,12 @@ class XGBTreeHFD:
                            self.depth_variable)
             tree.fit(X, y_tree)
             self.treehfd_list.append(tree)
-            self.eta0[self._get_output_idx(tree_idx)] += tree.eta0
+            eta0[self._get_output_idx(tree_idx)] += tree.eta0
             interaction_list_raw.append(tree.interaction_list)
         if self.num_outputs == 1:
-            self.eta0 = float(self.eta0[0])
+            self.eta0 = float(eta0[0])
+        else:
+            self.eta0 = eta0
         interaction_list_raw = [x for x in interaction_list_raw if len(x) > 0]
         if len(interaction_list_raw) > 0:
             self.interaction_list = np.unique(np.concatenate(
