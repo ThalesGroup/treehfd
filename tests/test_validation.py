@@ -2,6 +2,7 @@
 
 
 import json
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -121,7 +122,7 @@ def test_check_xgb_params() -> None:
 
 def test_check_data() -> None:
     """Test check_data function."""
-    # Check fail.
+    # Check fail for X shape.
     with pytest.raises(ValueError, match="X must be a non-empty numpy array"):
         check_data(np.empty((0, 6)), "X", num_feature=6)
     with pytest.raises(ValueError, match="X must be a non-empty numpy array"):
@@ -132,6 +133,12 @@ def test_check_data() -> None:
     X = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_X_n10_seed21.csv",
                       delimiter=",")
     assert check_data(X, "X_new", num_feature=6) is None
+
+    # Check fail for missing values.
+    X[3:7, 1:3] = np.nan
+    with warnings.catch_warnings(record=True) as warn:
+        check_data(X, "X", num_feature=6)
+        assert str(warn[0].message)[:31] == "X contains missing values (nan)"
 
 
 def test_check_interaction_order() -> None:

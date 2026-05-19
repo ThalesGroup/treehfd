@@ -1,6 +1,8 @@
 """Functions to validate input arguments of main class XGBTreeHFD."""
 
 
+import warnings
+
 import numpy as np
 import xgboost as xgb
 from numpy.random import default_rng
@@ -92,6 +94,13 @@ def check_data(X: np.ndarray, name: str, num_feature: int) -> None:
                      "expected number of features in the xgboost model, that "
                      f"is {num_feature}.")
         raise ValueError(error_msg)
+    nan_check = np.sum(np.isnan(X)) == 0
+    if not nan_check:
+        warn_msg = (f"{name} contains missing values (nan), which are not "
+                     "currently supported. If the proportion of missing "
+                     "values is large, treehfd decomposition may have a poor "
+                     "fidelity to XGBoost model.")
+        warnings.warn(warn_msg, stacklevel=2)
 
 
 def check_interaction_order(interaction_order: int) -> None:
