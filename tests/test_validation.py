@@ -26,18 +26,32 @@ TESTS_DIR = Path(__file__).parent.resolve()
 
 def test_check_xgb_model_type() -> None:
     """Test check_xgb_model_type function."""
-    # Check fail.
+    # Check fail of model and variable types.
     with pytest.raises(ValueError, match="xgb_model must be a xgboost model"):
         check_xgb_model_type("string")
     xgb_model = xgb.XGBRegressor(enable_categorical=True)
     with pytest.raises(ValueError, match="One-hot encoding should be used"):
         check_xgb_model_type(xgb_model)
 
-    # Check pass.
+    # Check pass of model and variable types.
     xgb_model = xgb.XGBRegressor()
     assert check_xgb_model_type(xgb_model) is None
     xgb_model = xgb.XGBClassifier(objective="multi:softmax")
     assert check_xgb_model_type(xgb_model) is None
+
+    # Check fail of XGBoost objective.
+    for obj in ["reg:logistic", "binary:hinge", "reg:gamma", "reg:tweedie"]:
+        xgb_model = xgb.XGBRegressor(objective=obj)
+        with pytest.raises(ValueError, match="The objective of xgb_model"):
+            check_xgb_model_type(xgb_model)
+
+    # Check pass of XGBoost objective.
+    valid_obj = ["reg:squarederror", "reg:squaredlogerror",
+        "reg:pseudohubererror", "reg:absoluteerror", "reg:quantileerror",
+        "binary:logistic", "binary:logitraw", "multi:softmax", "multi:softprob"]
+    for obj in valid_obj:
+        xgb_model = xgb.XGBRegressor(objective=obj)
+        assert check_xgb_model_type(xgb_model) is None
 
 
 def test_check_xgb_model_learner() -> None:

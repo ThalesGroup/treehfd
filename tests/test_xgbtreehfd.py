@@ -158,11 +158,16 @@ def test_tree_predict_boosting() -> None:
                       delimiter=",")
 
     # Tree predictions for regression and gradient boosting models.
-    for obj in ["reg:squarederror", "reg:pseudohubererror",
-                "reg:absoluteerror"]:
+    for obj in ["reg:squarederror", "reg:squaredlogerror",
+        "reg:pseudohubererror", "reg:absoluteerror", "reg:quantileerror"]:
+        y_temp, quantile_alpha = np.copy(y), None
+        if obj == "reg:squaredlogerror":
+            y_temp[y_temp <= 0] = 1
+        if obj == "reg:quantileerror":
+            quantile_alpha = 0.8
         xgb_model = xgb.XGBRegressor(n_estimators=10, max_depth=3,
-                                     objective=obj)
-        xgb_model = xgb_model.fit(X, y)
+                        objective=obj, quantile_alpha=quantile_alpha)
+        xgb_model = xgb_model.fit(X, y_temp)
         xgb_predictions = xgb_model.predict(X_new)
         treehfd_model = XGBTreeHFD(xgb_model)
         tree_predictions = treehfd_model._tree_predict(X_new)

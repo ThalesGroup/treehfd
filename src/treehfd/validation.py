@@ -17,14 +17,22 @@ def check_xgb_model_type(xgb_model: xgb.sklearn.XGBModel) -> None:
     type_check = isinstance(xgb_model, (xgb.sklearn.XGBRegressor,
                                          xgb.sklearn.XGBClassifier))
     if type_check:
-        objective = str(xgb_model.objective).split(":")[0]
-        type_check = objective in ("reg", "binary", "multi")
+        objective_type = str(xgb_model.objective).split(":")[0]
+        type_check = objective_type in ("reg", "binary", "multi")
     if not type_check:
         error_msg = ("xgb_model must be a xgboost model for regression or "
                      "classification, respectively of type "
                      "xgboost.sklearn.XGBRegressor "
                      "or xgboost.sklearn.XGBClassifier, built with the "
                      "scikit-learn interface of the xgboost package.")
+        raise ValueError(error_msg)
+    valid_obj = ["reg:squarederror", "reg:squaredlogerror",
+        "reg:pseudohubererror", "reg:absoluteerror", "reg:quantileerror",
+        "binary:logistic", "binary:logitraw", "multi:softmax", "multi:softprob"]
+    obj_check = xgb_model.objective in valid_obj
+    if not obj_check:
+        error_msg = ("The objective of xgb_model must be one of the "
+                     f"following: {valid_obj}.")
         raise ValueError(error_msg)
     if xgb_model.enable_categorical:
         error_msg = ("treehfd does not support categorical variables. "
