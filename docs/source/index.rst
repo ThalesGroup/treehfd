@@ -9,8 +9,9 @@ This decomposition breaks down XGBoost models into a sum of functions of one or
 two variables (respectively main effects and interactions), which are intrinsically
 explainable, while preserving the accuracy of the initial black-box model.
 
-**treehfd** currently supports XGBoost models for regression and binary classification
+**treehfd** currently supports XGBoost models for regression and classification
 with numeric input variables, and categorical variables should be one-hot encoded.
+Multiclass classification is supported, and the decomposition of each logit is computed.
 Both gradient boosting models and random forests are supported, but not boosted
 forests.
 

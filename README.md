@@ -37,8 +37,9 @@ In Advances in Neural Information Processing Systems 38 (NeurIPS 2025), in press
 
 The documentation is available at [**Read the Docs**](https://treehfd.readthedocs.io/en/latest/).
 
-**`treehfd`** currently supports XGBoost models for regression and binary classification with numeric input variables,
+**`treehfd`** currently supports XGBoost models for regression and classification with numeric input variables,
 and categorical variables should be one-hot encoded.
+Multiclass classification is supported, and the decomposition of each logit is computed.
 Both gradient boosting models and random forests are supported, but not boosted forests.
 **`treehfd`** essentially relies on `xgboost`, `numpy`, `scipy`, and `scikit-learn`.
 

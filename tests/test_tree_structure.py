@@ -32,13 +32,31 @@ def test_get_params() -> None:
     xgb_model = xgb_model.fit(X, y)
     config = json.loads(xgb_model.get_booster().save_config())
     (max_depth, n_estimators, base_score, num_feature,
-     num_parallel_tree, num_target) = get_params(config)
+     num_parallel_tree, num_target, num_class) = get_params(config)
     assert max_depth == 6
     assert n_estimators == 100
     assert np.round(base_score, decimals=2) == 0.89
     assert num_feature == 6
     assert num_parallel_tree == 1
     assert num_target == 1
+    assert num_class == 0
+
+    # Test multiclass classification.
+    labels = np.zeros(X.shape[0], dtype=int)
+    labels[y > 0] = 1
+    labels[y > 1] = 2
+    xgb_model = xgb.XGBClassifier()
+    xgb_model = xgb_model.fit(X, labels)
+    config = json.loads(xgb_model.get_booster().save_config())
+    (max_depth, n_estimators, base_score, num_feature,
+     num_parallel_tree, num_target, num_class) = get_params(config)
+    assert max_depth == 6
+    assert n_estimators == 100
+    assert base_score.shape == (3,)
+    assert num_feature == 6
+    assert num_parallel_tree == 1
+    assert num_target == 1
+    assert num_class == 3
 
 
 def test_extract_child_ids() -> None:

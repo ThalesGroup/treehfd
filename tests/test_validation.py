@@ -2,6 +2,7 @@
 
 
 import json
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -26,16 +27,32 @@ TESTS_DIR = Path(__file__).parent.resolve()
 
 def test_check_xgb_model_type() -> None:
     """Test check_xgb_model_type function."""
-    # Check fail.
+    # Check fail of model and variable types.
     with pytest.raises(ValueError, match="xgb_model must be a xgboost model"):
         check_xgb_model_type("string")
     xgb_model = xgb.XGBRegressor(enable_categorical=True)
     with pytest.raises(ValueError, match="One-hot encoding should be used"):
         check_xgb_model_type(xgb_model)
 
-    # Check pass.
+    # Check pass of model and variable types.
     xgb_model = xgb.XGBRegressor()
     assert check_xgb_model_type(xgb_model) is None
+    xgb_model = xgb.XGBClassifier(objective="multi:softmax")
+    assert check_xgb_model_type(xgb_model) is None
+
+    # Check fail of XGBoost objective.
+    for obj in ["reg:logistic", "binary:hinge", "reg:gamma", "reg:tweedie"]:
+        xgb_model = xgb.XGBRegressor(objective=obj)
+        with pytest.raises(ValueError, match="The objective of xgb_model"):
+            check_xgb_model_type(xgb_model)
+
+    # Check pass of XGBoost objective.
+    valid_obj = ["reg:squarederror", "reg:squaredlogerror",
+        "reg:pseudohubererror", "reg:absoluteerror", "reg:quantileerror",
+        "binary:logistic", "binary:logitraw", "multi:softmax", "multi:softprob"]
+    for obj in valid_obj:
+        xgb_model = xgb.XGBRegressor(objective=obj)
+        assert check_xgb_model_type(xgb_model) is None
 
 
 def test_check_xgb_model_learner() -> None:
@@ -105,7 +122,7 @@ def test_check_xgb_params() -> None:
 
 def test_check_data() -> None:
     """Test check_data function."""
-    # Check fail.
+    # Check fail for X shape.
     with pytest.raises(ValueError, match="X must be a non-empty numpy array"):
         check_data(np.empty((0, 6)), "X", num_feature=6)
     with pytest.raises(ValueError, match="X must be a non-empty numpy array"):
@@ -116,6 +133,12 @@ def test_check_data() -> None:
     X = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_X_n10_seed21.csv",
                       delimiter=",")
     assert check_data(X, "X_new", num_feature=6) is None
+
+    # Check fail for missing values.
+    X[3:7, 1:3] = np.nan
+    with warnings.catch_warnings(record=True) as warn:
+        check_data(X, "X", num_feature=6)
+        assert str(warn[0].message)[:31] == "X contains missing values (nan)"
 
 
 def test_check_interaction_order() -> None:

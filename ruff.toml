@@ -24,12 +24,12 @@ convention = "numpy"
   "F401"
 ]
 "tests/*.py" = [
+  "PLR0915",
   "PLR2004",
   "S101",
   "SLF001"
 ]
 "examples/*.py" = [
-  "T201",
   "INP001"
 ]
 "ensemble.py" = [

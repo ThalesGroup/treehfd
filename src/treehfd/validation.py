@@ -1,6 +1,8 @@
 """Functions to validate input arguments of main class XGBTreeHFD."""
 
 
+import warnings
+
 import numpy as np
 import xgboost as xgb
 from numpy.random import default_rng
@@ -9,22 +11,30 @@ from numpy.random import default_rng
 def check_xgb_model_type(xgb_model: xgb.sklearn.XGBModel) -> None:
     """Check xgb_model type.
 
-    Check that xgb_model is a xgboost model for regression or binary
-    classification, of type xgboost.sklearn.XGBRegressor
+    Check that xgb_model is a xgboost model for regression or
+    classification, respectively of type xgboost.sklearn.XGBRegressor
     or xgboost.sklearn.XGBClassifier, built with the scikit-learn
     interface of the xgboost package.
     """
     type_check = isinstance(xgb_model, (xgb.sklearn.XGBRegressor,
                                          xgb.sklearn.XGBClassifier))
     if type_check:
-        objective = str(xgb_model.objective).split(":")[0]
-        type_check = objective in ("reg", "binary")
+        objective_type = str(xgb_model.objective).split(":")[0]
+        type_check = objective_type in ("reg", "binary", "multi")
     if not type_check:
         error_msg = ("xgb_model must be a xgboost model for regression or "
-                     "binary classification, respectively of type "
+                     "classification, respectively of type "
                      "xgboost.sklearn.XGBRegressor "
                      "or xgboost.sklearn.XGBClassifier, built with the "
                      "scikit-learn interface of the xgboost package.")
+        raise ValueError(error_msg)
+    valid_obj = ["reg:squarederror", "reg:squaredlogerror",
+        "reg:pseudohubererror", "reg:absoluteerror", "reg:quantileerror",
+        "binary:logistic", "binary:logitraw", "multi:softmax", "multi:softprob"]
+    obj_check = xgb_model.objective in valid_obj
+    if not obj_check:
+        error_msg = ("The objective of xgb_model must be one of the "
+                     f"following: {valid_obj}.")
         raise ValueError(error_msg)
     if xgb_model.enable_categorical:
         error_msg = ("treehfd does not support categorical variables. "
@@ -84,6 +94,13 @@ def check_data(X: np.ndarray, name: str, num_feature: int) -> None:
                      "expected number of features in the xgboost model, that "
                      f"is {num_feature}.")
         raise ValueError(error_msg)
+    nan_check = np.sum(np.isnan(X)) == 0
+    if not nan_check:
+        warn_msg = (f"{name} contains missing values (nan), which are not "
+                     "currently supported. If the proportion of missing "
+                     "values is large, treehfd decomposition may have a poor "
+                     "fidelity to XGBoost model.")
+        warnings.warn(warn_msg, stacklevel=2)
 
 
 def check_interaction_order(interaction_order: int) -> None:
