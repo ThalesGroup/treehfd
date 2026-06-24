@@ -6,6 +6,7 @@ import warnings
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 import xgboost as xgb
 
@@ -14,6 +15,7 @@ from treehfd.validation import (
     check_depth_variable,
     check_interaction_list,
     check_interaction_order,
+    check_no_categorical,
     check_xgb_model_learner,
     check_xgb_model_type,
     check_xgb_params,
@@ -27,12 +29,9 @@ TESTS_DIR = Path(__file__).parent.resolve()
 
 def test_check_xgb_model_type() -> None:
     """Test check_xgb_model_type function."""
-    # Check fail of model and variable types.
+    # Check fail of model type.
     with pytest.raises(ValueError, match="xgb_model must be a xgboost model"):
         check_xgb_model_type("string")
-    xgb_model = xgb.XGBRegressor(enable_categorical=True)
-    with pytest.raises(ValueError, match="One-hot encoding should be used"):
-        check_xgb_model_type(xgb_model)
 
     # Check pass of model and variable types.
     xgb_model = xgb.XGBRegressor()
@@ -76,6 +75,33 @@ def test_check_xgb_model_learner() -> None:
     config = json.loads(xgb_model.get_booster().save_config())
     assert check_xgb_model_learner(config) is None
 
+
+def test_check_no_categorical() -> None:
+    """Test check_no_categorical function."""
+    # Check pass.
+    np.random.default_rng(21)
+    X = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_X_n10_seed21.csv",
+                      delimiter=",")
+    y = np.genfromtxt(f"{TESTS_DIR}/datasets/dataset_y_n10_seed21.csv",
+                      delimiter=",")
+    xgb_model = xgb.XGBRegressor()
+    xgb_model = xgb_model.fit(X, y)
+    check_no_categorical(xgb_model.get_booster())
+
+    # Check fail.
+    y = [0]*5 + [1]*5
+    X = pd.DataFrame(X)
+    X[1] = y
+    X[1] = X[1].astype("category")
+    xgb_model = xgb.XGBRegressor(enable_categorical=True)
+    xgb_model = xgb_model.fit(X, y)
+    xgb_table = xgb_model.get_booster().trees_to_dataframe()
+    any_cat = np.any([isinstance(x, list) for x in xgb_table["Category"]])
+    if any_cat:
+        with pytest.raises(ValueError, match="does not support categorical"):
+            check_no_categorical(xgb_model.get_booster())
+    else:
+        check_no_categorical(xgb_model.get_booster())
 
 def test_check_xgb_params() -> None:
     """Test check_xgb_params function."""

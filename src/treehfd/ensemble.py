@@ -16,6 +16,7 @@ from treehfd.validation import (
     check_depth_variable,
     check_interaction_list,
     check_interaction_order,
+    check_no_categorical,
     check_xgb_model_learner,
     check_xgb_model_type,
     check_xgb_params,
@@ -118,6 +119,7 @@ class XGBTreeHFD:
             raise ValueError(error_msg)
         config = json.loads(booster.save_config())
         check_xgb_model_learner(config)
+        check_no_categorical(booster)
         (max_depth, n_estimators, base_score, num_feature,
          num_parallel_tree, num_target, num_class) = get_params(config)
         check_xgb_params(max_depth, n_estimators, num_parallel_tree, num_target)
