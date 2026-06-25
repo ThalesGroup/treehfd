@@ -36,10 +36,6 @@ def check_xgb_model_type(xgb_model: xgb.sklearn.XGBModel) -> None:
         error_msg = ("The objective of xgb_model must be one of the "
                      f"following: {valid_obj}.")
         raise ValueError(error_msg)
-    if xgb_model.enable_categorical:
-        error_msg = ("treehfd does not support categorical variables. "
-                     "One-hot encoding should be used instead to fit xgboost.")
-        raise ValueError(error_msg)
 
 
 def check_xgb_model_learner(config: dict) -> None:
@@ -50,6 +46,17 @@ def check_xgb_model_learner(config: dict) -> None:
         error_msg = ("xgb_model must be a xgboost model built with the tree "
                      "learner gbtree.")
         raise ValueError(error_msg)
+
+
+def check_no_categorical(booster: xgb.core.Booster) -> None:
+    """Check no categorical variables were used to train xgboost model."""
+    feature_types = booster.feature_types
+    if feature_types is not None:
+        categorical_check = "c" in feature_types
+        if categorical_check:
+            error_msg = ("treehfd does not support categorical variables. "
+                "One-hot encoding should be used instead to fit xgboost.")
+            raise ValueError(error_msg)
 
 
 def check_xgb_params(max_depth: int, n_estimators: int,

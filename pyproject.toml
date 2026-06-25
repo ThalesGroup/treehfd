@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "treehfd"
-version = "1.4.0"
+version = "1.4.1"
 authors = [
     {name = "Clement Benard", email = "clement-l.benard@thalesgroup.com"}
 ]
