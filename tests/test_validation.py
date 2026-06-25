@@ -100,8 +100,7 @@ def test_check_no_categorical() -> None:
     if any_cat:
         with pytest.raises(ValueError, match="does not support categorical"):
             check_no_categorical(xgb_model.get_booster())
-    else:
-        check_no_categorical(xgb_model.get_booster())
+
 
 def test_check_xgb_params() -> None:
     """Test check_xgb_params function."""
