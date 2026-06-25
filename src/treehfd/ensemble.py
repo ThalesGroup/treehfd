@@ -174,6 +174,8 @@ class XGBTreeHFD:
         check_interaction_list(interaction_list)
         if depth_variable is not None:
             self.depth_variable = depth_variable
+        else:
+            self.depth_variable = self.max_depth
 
         # Compute original tree predictions.
         tree_predictions = self._tree_predict(X)
