@@ -52,6 +52,9 @@ class TreeHFD:
     interaction_list : list
         The list of interactions, defined as variable pairs, that occur
         in the tree paths.
+    depth_variable : int
+        Variables are selected at the first depth_variable levels of the tree
+        for the components of the decomposition.
     eta0 : float, default=0
         Intercept of the TreeHFD decomposition of the tree.
     cartesian_partition : CartesianTreePartition
@@ -72,6 +75,7 @@ class TreeHFD:
                                   ] = extract_tree_structure(tree_table)
         self.interaction_order = interaction_order
         self.interaction_list: list[list[int]] = []
+        self.depth_variable = depth_variable
         main_variables = np.empty(0, dtype=int)
         if len(self.tree_structure[0]) > 0:
             variable_paths = extract_variable_paths(self.tree_structure,
@@ -109,7 +113,7 @@ class TreeHFD:
         # Build matrix and target for optimization.
         constr_mat, target = build_constr_mat(y_tree, self.interaction_list,
             X_bin, self.cartesian_partition.main_variables,
-            self.cartesian_partition.partition_index)
+            self.cartesian_partition.partition_index, self.depth_variable)
 
         # Fit treehfd coefficients.
         self.hfd_coeffs = lsqr(constr_mat, target)[0]

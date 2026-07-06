@@ -7,7 +7,8 @@ from scipy import sparse
 
 def build_constr_mat(y_tree: np.ndarray, interaction_list: list,
                      X_bin: np.ndarray, main_variables: np.ndarray,
-                     partition_index: np.ndarray) -> tuple:
+                     partition_index: np.ndarray,
+                     depth_variable: int | None = None) -> tuple:
     """Build the matrix and target vector for the least square optimization.
 
     Parameters
@@ -23,6 +24,11 @@ def build_constr_mat(y_tree: np.ndarray, interaction_list: list,
         list of variable indices for main effects.
     partition_index : np.ndarray
         cell indices of all partitions.
+    depth_variable : int
+        Variables are selected at the first depth_variable levels of the tree
+        for the components of the decomposition.
+        When depth_variable < max_depth, tree outputs may not be constant in
+        each cell of the Cartesian tree partitions, and y_tree must be averaged.
 
     Returns
     -------
@@ -65,8 +71,8 @@ def build_constr_mat(y_tree: np.ndarray, interaction_list: list,
         constr_mean[k, values] = counts
 
     # Build constraint matrix for residual variance minimization.
-    values, index_unique, counts = np.unique(X_bin, return_index=True,
-                                             return_counts=True, axis=0)
+    values, index_unique, return_inverse, counts = np.unique(X_bin,
+        return_index=True, return_inverse=True, return_counts=True, axis=0)
     num_cells = counts.shape[0]
     constr_resid = np.zeros((num_cells, partition_size))
     for k in range(num_cells):
@@ -80,6 +86,12 @@ def build_constr_mat(y_tree: np.ndarray, interaction_list: list,
     # Compute target.
     num_zero = constr_ortho.shape[0] + constr_mean.shape[0]
     target = np.zeros(num_zero + num_cells)
-    target[num_zero:] = y_tree[index_unique] * np.sqrt(nsample*counts)
+    if depth_variable is None:
+        target[num_zero:] = y_tree[index_unique] * np.sqrt(nsample*counts)
+    else:
+        for k in range(len(values)):
+            cell_ind = np.where(return_inverse == k)[0]
+            target[num_zero + k] = (np.mean(y_tree[cell_ind])
+                                    * np.sqrt(nsample*len(cell_ind)))
 
     return(constr_mat, target)
