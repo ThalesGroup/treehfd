@@ -29,6 +29,8 @@ class TreeHFD:
     tree_table : pd.DataFrame
         The table with the structure of the considered tree, obtained
         from xgb_model.get_booster().trees_to_dataframe().
+    max_depth : int
+        Tree depth parameter.
     interaction_order : int, default=2
         Set to 1 to fit only main effects, or to 2 to also include
         second-order interactions in the TreeHFD decomposition.
@@ -37,24 +39,30 @@ class TreeHFD:
         decomposition. Each row defines an interaction with two integers
         for the variable indices. Default=None, and interactions are
         automatically extracted from tree paths.
-    depth_variable : int
+    depth_variable : tuple[int, int]
         Variables are selected at the first depth_variable levels of the tree
-        for the components of the decomposition.
+        for the components of the decomposition. The first tuple component is
+        to select main effect variables, and the second one to select
+        interactions.
 
     Attributes
     ----------
     tree_structure : tuple
         Structure of the tree, i.e., the splitting variables, children
         node indices, and splitting values.
+    max_depth : int
+        Tree depth parameter.
     interaction_order : int, default=2
         Set to 1 to fit only main effects, or to 2 to also include
         second-order interactions in the TreeHFD decomposition.
     interaction_list : list
         The list of interactions, defined as variable pairs, that occur
         in the tree paths.
-    depth_variable : int
+    depth_variable : tuple[int, int]
         Variables are selected at the first depth_variable levels of the tree
-        for the components of the decomposition.
+        for the components of the decomposition. The first tuple component is
+        to select main effect variables, and the second one to select
+        interactions.
     eta0 : float, default=0
         Intercept of the TreeHFD decomposition of the tree.
     cartesian_partition : CartesianTreePartition
@@ -67,22 +75,26 @@ class TreeHFD:
         components in each cell of the Cartesian tree partitions.
     """
 
-    def __init__(self, tree_table: pd.DataFrame,
+    def __init__(self, tree_table: pd.DataFrame, max_depth: int,
                  interaction_order: int, interaction_list: np.ndarray | None,
-                 depth_variable: int) -> None:
+                 depth_variable: tuple[int, int]) -> None:
         """Initialize TreeHFD from tree structure."""
         self.tree_structure: tuple[np.ndarray, np.ndarray, np.ndarray,
                                   ] = extract_tree_structure(tree_table)
+        self.max_depth = max_depth
         self.interaction_order = interaction_order
         self.interaction_list: list[list[int]] = []
         self.depth_variable = depth_variable
         main_variables = np.empty(0, dtype=int)
         if len(self.tree_structure[0]) > 0:
             variable_paths = extract_variable_paths(self.tree_structure,
-                                                    depth_variable)
+                                                    depth_variable[0])
             main_variables = extract_variables(variable_paths)
             order_two: int = 2
             if interaction_order == order_two:
+                if depth_variable[1] != depth_variable[0]:
+                    variable_paths = extract_variable_paths(self.tree_structure,
+                                                            depth_variable[1])
                 self.interaction_list = extract_interactions(variable_paths)
                 if interaction_list is not None:
                     self.interaction_list = [list(x) for x in
@@ -111,9 +123,10 @@ class TreeHFD:
                     self.tree_structure, self.interaction_list)
 
         # Build matrix and target for optimization.
+        reduced_depth = self.depth_variable[0] < self.max_depth
         constr_mat, target = build_constr_mat(y_tree, self.interaction_list,
             X_bin, self.cartesian_partition.main_variables,
-            self.cartesian_partition.partition_index, self.depth_variable)
+            self.cartesian_partition.partition_index, reduced_depth)
 
         # Fit treehfd coefficients.
         self.hfd_coeffs = lsqr(constr_mat, target)[0]

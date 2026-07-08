@@ -195,12 +195,12 @@ def test_check_interaction_list() -> None:
 def test_check_depth_variable() -> None:
     """Test check_depth_variable function."""
     # Check fail.
-    for depth_variable in ["ezar", np.ones(10), -3]:
-        with pytest.raises(ValueError, match="depth_variable must be None or"):
+    for depth_variable in ["ezar", np.ones(10), -3, (3, 4), (2, -1)]:
+        with pytest.raises(ValueError, match="depth_variable must be None, or"):
             check_depth_variable(depth_variable)
 
     # Check pass.
-    for depth_variable in [None, 1, 13]:
+    for depth_variable in [None, 1, 13, (5, 2)]:
         assert check_depth_variable(depth_variable) is None
 
 

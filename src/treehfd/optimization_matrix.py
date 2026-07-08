@@ -8,7 +8,7 @@ from scipy import sparse
 def build_constr_mat(y_tree: np.ndarray, interaction_list: list,
                      X_bin: np.ndarray, main_variables: np.ndarray,
                      partition_index: np.ndarray,
-                     depth_variable: int | None = None) -> tuple:
+                     reduced_depth: bool) -> tuple:
     """Build the matrix and target vector for the least square optimization.
 
     Parameters
@@ -24,11 +24,11 @@ def build_constr_mat(y_tree: np.ndarray, interaction_list: list,
         list of variable indices for main effects.
     partition_index : np.ndarray
         cell indices of all partitions.
-    depth_variable : int
-        Variables are selected at the first depth_variable levels of the tree
-        for the components of the decomposition.
-        When depth_variable < max_depth, tree outputs may not be constant in
-        each cell of the Cartesian tree partitions, and y_tree must be averaged.
+    reduced_depth: bool
+        Boolean to indicate if a reduced depth was used to select main effect
+        variables, i.e. depth_variable < max_depth. In this case, tree outputs
+        may not be constant in each cell of the Cartesian tree partitions, and
+        y_tree must be averaged.
 
     Returns
     -------
@@ -86,12 +86,12 @@ def build_constr_mat(y_tree: np.ndarray, interaction_list: list,
     # Compute target.
     num_zero = constr_ortho.shape[0] + constr_mean.shape[0]
     target = np.zeros(num_zero + num_cells)
-    if depth_variable is None:
-        target[num_zero:] = y_tree[index_unique] * np.sqrt(nsample*counts)
-    else:
+    if reduced_depth:
         for k in range(len(values)):
             cell_ind = np.where(return_inverse == k)[0]
             target[num_zero + k] = (np.mean(y_tree[cell_ind])
                                     * np.sqrt(nsample*len(cell_ind)))
+    else:
+        target[num_zero:] = y_tree[index_unique] * np.sqrt(nsample*counts)
 
     return(constr_mat, target)

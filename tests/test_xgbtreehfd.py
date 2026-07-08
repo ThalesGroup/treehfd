@@ -140,10 +140,10 @@ def test_xgbtreehfd_fit() -> None:
         treehfd_model.fit(np.zeros((100, 4)))
     with pytest.raises(ValueError, match="interaction_order must be 1 to fit"):
         treehfd_model.fit(X, interaction_order=3)
-    with pytest.raises(ValueError, match="must be None or positive integer"):
+    with pytest.raises(ValueError, match="must be None, or positive integer"):
         treehfd_model.fit(X, depth_variable=-5)
     treehfd_model.fit(X, depth_variable=2)
-    assert treehfd_model.depth_variable == 2
+    assert treehfd_model.depth_variable == (2, 2)
 
 
 def test_tree_predict_boosting() -> None:
@@ -428,7 +428,7 @@ def test_xgbtreehfd_random_forests() -> None:
 
     # Test regression for random forests.
     xgb_model = xgb.XGBRegressor(num_parallel_tree=100, n_estimators=1,
-        learning_rate=1, subsample=0.7, colsample_bynode=mtry, max_depth=3)
+        learning_rate=1, subsample=0.7, colsample_bynode=mtry, max_depth=4)
     xgb_model = xgb_model.fit(X, y)
     treehfd_model = XGBTreeHFD(xgb_model)
     treehfd_model.fit(X)
@@ -440,14 +440,42 @@ def test_xgbtreehfd_random_forests() -> None:
                 + np.sum(y_order2, axis=1))
     xgb_pred = xgb_model.predict(X_new)
     mse_resid_reg = np.mean((xgb_pred - hfd_pred)**2)/np.var(xgb_pred)
-    assert mse_resid_reg < 0.02
+    assert mse_resid_reg < 0.005
     y_exact = np.zeros((100, DIM))
     y_exact[:, 0] = np.sin(2*np.pi*X_new[:, 0]) + eta_main(X_new[:, 0], RHO)
     for j in range(1, DIM - 2):
         y_exact[:, j] = eta_main(X_new[:, j], RHO)
     mse_main = np.mean((y_exact - y_main)**2, axis=0)
     cumulated_mse = np.sum(mse_main)
-    assert cumulated_mse < 1.0
+    assert cumulated_mse < 0.8
+    y_exact_01 = eta_order2(X_new[:, 0], X_new[:, 1], RHO)
+    y_exact_23 = eta_order2(X_new[:, 2], X_new[:, 3], RHO)
+    mse_interaction = [np.mean((y_exact_01 - np.squeeze(y_order2[:, 0]))**2),
+                       np.mean((y_exact_23 - np.squeeze(y_order2[:, 9]))**2)]
+    assert np.sum(mse_interaction) < 0.55
+
+    # Test depth_variable
+    treehfd_model = XGBTreeHFD(xgb_model)
+    treehfd_model.fit(X, depth_variable=(3, 2))
+    np.random.default_rng(11)
+    y_main, y_order2 = treehfd_model.predict(X_new)
+    hfd_pred = (treehfd_model.eta0 + np.sum(y_main, axis=1)
+                + np.sum(y_order2, axis=1))
+    xgb_pred = xgb_model.predict(X_new)
+    mse_resid_reg = np.mean((xgb_pred - hfd_pred)**2)/np.var(xgb_pred)
+    assert mse_resid_reg < 0.03
+    y_exact = np.zeros((100, DIM))
+    y_exact[:, 0] = np.sin(2*np.pi*X_new[:, 0]) + eta_main(X_new[:, 0], RHO)
+    for j in range(1, DIM - 2):
+        y_exact[:, j] = eta_main(X_new[:, j], RHO)
+    mse_main = np.mean((y_exact - y_main)**2, axis=0)
+    cumulated_mse = np.sum(mse_main)
+    assert cumulated_mse < 0.85
+    y_exact_01 = eta_order2(X_new[:, 0], X_new[:, 1], RHO)
+    y_exact_23 = eta_order2(X_new[:, 2], X_new[:, 3], RHO)
+    mse_interaction = [np.mean((y_exact_01 - np.squeeze(y_order2[:, 0]))**2),
+                       np.mean((y_exact_23 - np.squeeze(y_order2[:, 9]))**2)]
+    assert np.sum(mse_interaction) < 0.65
 
     # Test binary classification for random forests.
     prob = 1/(1 + np.exp(-(y - 1.0)))
