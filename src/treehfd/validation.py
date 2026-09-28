@@ -145,16 +145,18 @@ def check_depth_variable(depth_variable: tuple | int | None) -> None:
     if isinstance(depth_variable, int):
         type_check = depth_variable > 0
     if isinstance(depth_variable, tuple):
-        type_check = (isinstance(depth_variable[0], int)
+        dim_depth = 2
+        type_check = (len(depth_variable) == dim_depth and
+                      isinstance(depth_variable[0], int)
                       and isinstance(depth_variable[1], int))
         if type_check:
             type_check = (depth_variable[0] > 0 and depth_variable[1] > 0
                           and depth_variable[0] >= depth_variable[1])
     if not type_check:
         error_msg = ("depth_variable must be None, or positive integer, or a "
-                     "tuple of positive integers where the first component for"
-                     " main effects is higher than the second component for "
-                     "interactions.")
+                     "tuple of two positive integers, where the first component"
+                     " for main effects is higher than the second component for"
+                     " interactions.")
         raise ValueError(error_msg)
 
 
