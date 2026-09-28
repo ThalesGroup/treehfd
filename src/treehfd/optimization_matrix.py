@@ -24,7 +24,7 @@ def build_constr_mat(y_tree: np.ndarray, interaction_list: list,
         list of variable indices for main effects.
     partition_index : np.ndarray
         cell indices of all partitions.
-    reduced_depth: bool
+    reduced_depth : bool
         Boolean to indicate if a reduced depth was used to select main effect
         variables, i.e. depth_variable < max_depth. In this case, tree outputs
         may not be constant in each cell of the Cartesian tree partitions, and
