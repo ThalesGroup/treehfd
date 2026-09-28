@@ -60,7 +60,7 @@ class XGBTreeHFD:
     num_parallel_tree: int
         The number of trees in random forests (one for gradient boosting
         models).
-    num_outputs: int
+    num_outputs : int
         The number of model outputs: one for regression and binary
         classification, and the number of classes for multiclass
         classification.
@@ -72,9 +72,11 @@ class XGBTreeHFD:
         second-order interactions in the TreeHFD decomposition.
     interaction_list : np.array, default=np.empty((0, 0))
         The list of interactions, defined as variable pairs.
-    depth_variable : int, default=max_depth
+    depth_variable : tuple[int, int], default=(max_depth, max_depth)
         Variables are selected at the first depth_variable levels of the tree
         for the components of the decomposition. Set to max_depth by default.
+        The first tuple component is to select main effect variables, and the
+        second one to select interactions.
         Reducing depth_variable strongly speeds up computations for deep trees.
     treehfd_list : list, default=[]
         The list of the TreeHFD decomposition for each tree. For multiclass
@@ -136,13 +138,13 @@ class XGBTreeHFD:
         self.xgb_table = booster.trees_to_dataframe()
         self.interaction_order: int = 2
         self.interaction_list = np.empty((0, 0))
-        self.depth_variable: int = max_depth
+        self.depth_variable: tuple[int, int] = (max_depth, max_depth)
         self.treehfd_list: list[TreeHFD] = []
         self.eta0: float | np.ndarray = 0.0
 
     def fit(self, X: np.ndarray, interaction_order: int = 2,
             interaction_list: np.ndarray | None = None,
-            depth_variable: int | None = None,
+            depth_variable: tuple | int | None = None,
             verbose: bool = True) -> None:
         """Fit TreeHFD decomposition of the provided xgboost model.
 
@@ -158,10 +160,12 @@ class XGBTreeHFD:
             decomposition. Each row defines an interaction with two integers
             for the variable indices. Default=None, and interactions are
             automatically extracted from tree paths.
-        depth_variable : int, default=None
+        depth_variable : tuple | int | None, default=None
             Variables are selected at the first depth_variable levels of the
             tree for the components of the decomposition. Default is None,
-            and all variables are selected.
+            and all variables are selected. If a tuple is provided, the first
+            component is to select main effect variables, and the second one to
+            select interactions.
         verbose : bool, default=True
             Set to False to deactivate the console display of computation
             progress (% of trees).
@@ -172,10 +176,12 @@ class XGBTreeHFD:
         self.interaction_order = interaction_order
         check_depth_variable(depth_variable)
         check_interaction_list(interaction_list)
-        if depth_variable is not None:
+        if isinstance(depth_variable, tuple):
             self.depth_variable = depth_variable
+        elif isinstance(depth_variable, int):
+            self.depth_variable = (depth_variable, depth_variable)
         else:
-            self.depth_variable = self.max_depth
+            self.depth_variable = (self.max_depth, self.max_depth)
 
         # Compute original tree predictions.
         tree_predictions = self._tree_predict(X)
@@ -190,8 +196,8 @@ class XGBTreeHFD:
             tree_table = pd.DataFrame(
                 self.xgb_table[self.xgb_table["Tree"] == tree_idx])
             y_tree = tree_predictions[:, tree_idx]
-            tree = TreeHFD(tree_table, interaction_order, interaction_list,
-                           self.depth_variable)
+            tree = TreeHFD(tree_table, self.max_depth, interaction_order,
+                           interaction_list, self.depth_variable)
             tree.fit(X, y_tree)
             self.treehfd_list.append(tree)
             eta0[self._get_output_idx(tree_idx)] += tree.eta0

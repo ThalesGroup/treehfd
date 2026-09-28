@@ -37,7 +37,8 @@ def test_build_constr_mat() -> None:
 
     constr_mat, target = build_constr_mat(y_tree, interaction_list, X_bin,
                                           cartesian_partition.main_variables,
-                                          cartesian_partition.partition_index)
+                                          cartesian_partition.partition_index,
+                                          reduced_depth=False)
     data = np.round(constr_mat.data, decimals=1)
     assert np.array_equal(data,
                           np.array([1.8, 3.7, 7.1, 4.5, 3.2, 2.1, 5.3, 2.1,

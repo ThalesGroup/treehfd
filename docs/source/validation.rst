@@ -8,6 +8,7 @@ Validation
 
   check_xgb_model_type
   check_xgb_model_learner
+  check_no_categorical
   check_xgb_params
   check_data
   check_interaction_order
@@ -19,6 +20,7 @@ Validation
 
 .. autofunction:: treehfd.validation.check_xgb_model_type
 .. autofunction:: treehfd.validation.check_xgb_model_learner
+.. autofunction:: treehfd.validation.check_no_categorical
 .. autofunction:: treehfd.validation.check_xgb_params
 .. autofunction:: treehfd.validation.check_data
 .. autofunction:: treehfd.validation.check_interaction_order

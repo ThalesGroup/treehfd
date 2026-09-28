@@ -36,3 +36,7 @@ convention = "numpy"
   "FBT001",
   "FBT002"
 ]
+"optimization_matrix.py" = [
+  "FBT001",
+  "PLR0913"
+]
