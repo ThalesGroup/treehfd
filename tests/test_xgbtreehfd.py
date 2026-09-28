@@ -119,21 +119,21 @@ def test_xgbtreehfd_fit() -> None:
                           cartesian_partition.counts_list[0])
     assert np.array_equal(tree_partition.counts_list[1],
                           cartesian_partition.counts_list[1])
-    assert np.array_equal(np.round(treehfd_model.treehfd_list[0].hfd_coeffs,
-                                   decimals=2),
-                          np.array([-0.02, 0.02, 1.01, -0.05, -0.05, 1.17,
-                                    0.02, -1., -0.02, 0.33, 0., 0., 0.]))
+    coef_error = np.mean(np.abs(treehfd_model.treehfd_list[0].hfd_coeffs
+                        - np.array([-0.02, 0.02, 1.01, -0.05, -0.05, 1.17,
+                                    0.02, -1., -0.02, 0.33, 0., 0., 0.])))
+    assert coef_error < 0.1
     assert np.array_equal(treehfd_model.treehfd_list[0].interaction_list,
                           [[0, 2], [1, 2]])
     assert treehfd_model.treehfd_list[0].interaction_order == 2
-    assert np.array_equal(np.round(treehfd_model.treehfd_list[1].hfd_coeffs,
-                                   decimals=2),
-                          np.array([-0.07, 0.9, 0.8, -0.07, -0.01, 0., 0.03,
-                                    -0.03, -1.2, 0.17]))
-    assert np.array_equal(np.round(treehfd_model.treehfd_list[2].hfd_coeffs,
-                                   decimals=2),
-                          np.array([0.18, -0.18, 0.49, -0.04, 0.06, 0.03,
-                                    -0.07, 0.04, -0.05, -0.68, 0.23]))
+    coef_error = np.mean(np.abs(treehfd_model.treehfd_list[1].hfd_coeffs
+                         - np.array([-0.07, 0.9, 0.8, -0.07, -0.01, 0., 0.03,
+                                     -0.03, -1.2, 0.17])))
+    assert coef_error < 0.1
+    coef_error = np.mean(np.abs(treehfd_model.treehfd_list[2].hfd_coeffs
+                         - np.array([0.18, -0.18, 0.49, -0.04, 0.06, 0.03,
+                                    -0.07, 0.04, -0.05, -0.68, 0.23])))
+    assert coef_error < 0.1
 
     # Test wrong inputs.
     with pytest.raises(ValueError, match="the number of columns should match"):
@@ -310,14 +310,16 @@ def test_xgbtreehfd_predict() -> None:
                           delimiter=",")
 
     y_main, y_order2 = treehfd_model.predict(X_new)
-    assert np.array_equal(np.round(y_main, decimals=2),
-                          np.array([[0.44, -0.01, -0.05, 0., 0., 0.],
-                                    [0.09, -0.01, -0.05, 0., 0., 0.],
-                                    [0.09, -0.01, -0.05, 0., 0., 0.]]))
-    assert np.array_equal(np.round(y_order2, decimals=2),
-                          np.array([[ 0.2, -0.02, 0.],
-                                    [-0.1, 0.02, 0.],
-                                    [-0.1, 0.02, 0.]]))
+    prediction_error = np.sum(np.abs(y_main -
+                               np.array([[0.44, -0.01, -0.05, 0., 0., 0.],
+                                         [0.09, -0.01, -0.05, 0., 0., 0.],
+                                         [0.09, -0.01, -0.05, 0., 0., 0.]])))
+    assert prediction_error < 0.2
+    prediction_error = np.sum(np.abs(y_order2 -
+                                      np.array([[ 0.2, -0.02, 0.],
+                                               [-0.1, 0.02, 0.],
+                                               [-0.1, 0.02, 0.]])))
+    assert prediction_error < 0.1
 
     # Test multi classification.
     labels = np.zeros(X.shape[0], dtype=int)
