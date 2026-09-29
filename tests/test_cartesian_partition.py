@@ -39,8 +39,9 @@ def test_compute_partition_main() -> None:
     assert np.all(cartesian_partition.main_variables == [0, 1, 2, 3])
     assert np.all(cartesian_partition.partition_index == [0, 3, 5, 6, 7])
     assert np.array_equal(cartesian_partition.split_list[0],
-                          np.array([-0.78,  0.99]))
-    assert np.array_equal(cartesian_partition.split_list[1], np.array([-1.61]))
+                          np.array([-0.78,  0.99], dtype=np.float32))
+    assert np.array_equal(cartesian_partition.split_list[1],
+                          np.array([-1.61], dtype=np.float32))
     assert np.array_equal(cartesian_partition.split_list[2], np.array([]))
     assert np.array_equal(cartesian_partition.split_list[3], np.array([]))
 
@@ -51,7 +52,8 @@ def test_compute_partition_main() -> None:
     assert np.array_equal(X_bin_main[:, 0], np.array([0, 1, 0, 0, 1]))
     assert np.all(cartesian_partition.main_variables == [0, 1, 2, 3])
     assert np.all(cartesian_partition.partition_index == [0, 2, 4, 5, 6])
-    assert cartesian_partition.split_list[0][0] == (-0.78 + 0.99)/2
+    assert cartesian_partition.split_list[0][0] == np.mean(np.array([-0.78,
+                                                       0.99], dtype=np.float32))
 
     # Test case where input values equal splits.
     X[1, 0] = -0.78
