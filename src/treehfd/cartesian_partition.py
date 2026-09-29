@@ -92,8 +92,9 @@ class CartesianTreePartition:
                               dtype=int)
         num_splits: list[int] = []
         for idx, j in enumerate(self.main_variables):
-            split_j = np.unique(split_values[variables == j])
-            Xj_bin = np.digitize(X[:, j], bins=split_j, right=False)
+            split_j = np.unique(split_values[variables == j]).astype(np.float32)
+            Xj_bin = np.digitize(X[:, j].astype(np.float32), bins=split_j,
+                                 right=False)
             # remove empty bins
             bins_empty = [k for k in range(len(split_j), -1, -1)
                           if k not in set(Xj_bin)]
@@ -105,7 +106,8 @@ class CartesianTreePartition:
                 if 0 < k < len(split_j):
                     split_j[k - 1] = np.mean(split_j[(k - 1):(k + 1)])
                     split_j = np.delete(split_j, k)
-            Xj_bin = np.digitize(X[:, j], bins=split_j, right=False)
+            Xj_bin = np.digitize(X[:, j].astype(np.float32), bins=split_j,
+                                 right=False)
             self.split_list.append(split_j)
             X_bin_main[:, idx] = Xj_bin
             num_splits.append(len(split_j) + 1)
@@ -186,7 +188,7 @@ class CartesianTreePartition:
         num_func_main = len(self.main_variables)
         X_bin_main = np.zeros((X_new.shape[0], num_func_main), dtype=int)
         for idx, j in enumerate(self.main_variables):
-            X_bin_main[:, idx] = np.digitize(X_new[:, j],
+            X_bin_main[:, idx] = np.digitize(X_new[:, j].astype(np.float32),
                                              bins=self.split_list[idx],
                                              right=False)
         X_bin_main = X_bin_main + self.partition_index[:num_func_main]
